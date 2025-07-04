@@ -1,18 +1,33 @@
 #include "raylib.h"
-#include <stdlib.h> // srand()
-#include <time.h> //  seed do srand()
 
-void initializeGameMap(int gridHeight, int gridWidth, int gameMap[40][40]) {
-    srand(time(NULL));
-    for(int row = 0; row < gridHeight; row++) {
-        for(int col = 0; col < gridWidth; col++) {
-            // Randomly set cells as free (0) or obstacle (1)
-            // Adjust the likelihood by changing the modulo value (e.g., % 4 for 25% obstacles)
-            gameMap[row][col] = (rand() % 5 == 0) ? 1 : 0; // Approx. 20% chance of an obstacle
+// Tipos possíveis de células que teremos nos mapas
+typedef enum {
+    VAZIO = ' ',
+    INICIO_JOGADOR = 'J',
+    PAREDE_INDESTRUTIVEL = 'W',
+    PAREDE_DESTRUTIVEL = 'D',
+    CAIXA_COM_CHAVE = 'K',
+    CAIXA_SEM_CHAVE = 'B',
+    INIMIGO = 'E'
+} TipoCelulaMapa;
 
-            if(row == 20 && col == 20) {
-                gameMap[row][col] = 0;
-            }
-        }
-    }
-}
+// Estrutura que será utilizada para representar posição
+// de um elemento no mapa
+typedef struct {
+    int linha;
+    int coluna;
+} PosicaoMapa;
+
+// Definir tamanho padrão do mapa
+#define LINHAS 25
+#define COLUNAS 60
+
+// Função para carregar o mapa a partir de um arquivo de texto
+// Retorna um ponteiro para a matriz do mapa alocada dinamicamente
+char** carregarMapa(const char* nomeArquivo);
+
+// Função para liberar a memória alocada para o mapa
+void liberarMapa(char** gameMap);
+
+// Função responsável por desenhar o mapa na tela
+void desenharMapa(char** gameMap, int screenWidth, int screenHeight, int cellSize);
