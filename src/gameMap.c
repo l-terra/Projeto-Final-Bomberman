@@ -5,7 +5,9 @@
 
 // Função para carregar o mapa a partir de um arquivo texto
 char** carregarMapa(const char* nomeArquivo) {
+    // Abertura do arquivo no modo de leitura
     FILE* file = fopen(nomeArquivo, "r");
+    // Verifica se a abertura do arquivo falhou
     if(file == NULL) {
         printf("FALHA AO ABRIR ARQUIVO DO MAPA: %s", nomeArquivo);
         return NULL;
@@ -19,13 +21,18 @@ char** carregarMapa(const char* nomeArquivo) {
         return NULL;
     }
 
+    // array de char que vai servir como buffer para ler cada linha do arquivo.
     char linha[COLUNAS + 2]; // +1 para o '\n' e +1 para o '\0'
 
+    // Loop principal para ler cada linha do mapa.
+    // Itera de 0 até LINHAS-1 para processar todas as linhas do mapa.
     for (int i = 0; i < LINHAS; i++) {
+        // Para cada linha, aloca dinamicamente memória para os caracteres dessa linha.
+        // COLUNAS = 60 = numero de caracteres em cada linha do mapa
         mapa[i] = (char*)malloc(COLUNAS * sizeof(char));
+        // Verifica se a alocacao da linha falhou
         if (mapa[i] == NULL) {
             printf("FALHA AO ALOCAR MEMORIA PARA O MAPA NA LINHA: %d.", i);
-            // Liberar memoria ja alocada antes de retornar
             for (int j = 0; j < i; j++) {
                 free(mapa[j]);
             }
@@ -34,13 +41,20 @@ char** carregarMapa(const char* nomeArquivo) {
             return NULL;
         }
 
+        // Tenta ler uma linha do arquivo para o buffer 'linha'.
+        // fgets lê até 'sizeof(linha) - 1' caracteres ou até encontrar um '\n' ou EOF.
         if(fgets(linha, sizeof(linha), file) != NULL) {
-        // Copia apenas os 60 (NUMERO DE COLUNAS) primeiros caracteres, ignorando '\n' se houver
+            // Se a leitura foi bem-sucedida, copia os caracteres do buffer para a linha do mapa.
+            // Este loop copia apenas os 'COLUNAS' primeiros caracteres.
             for (int j = 0; j < COLUNAS; j++) {
+                // Verifica se o índice 'j' está dentro do comprimento da linha lida
+                // e se o caractere não é uma nova linha ('\n').
                 if (j < strlen(linha) && linha[j] != '\n') {
-                    mapa[i][j] = linha[j];
+                    mapa[i][j] = linha[j]; // Copia o caractere para a matriz do mapa.
                 } else {
-                    mapa[i][j] = VAZIO; // Preenche com vazio se a linha for mais curta
+                    // Se a linha lida for mais curta que 'COLUNAS' ou se um '\n' for encontrado,
+                    // preenche o restante da linha do mapa com o caractere VAZIO.
+                    mapa[i][j] = VAZIO;
                 }
             }
         }
@@ -55,6 +69,7 @@ char** carregarMapa(const char* nomeArquivo) {
     return mapa;
 }
 
+// apenas libera a memoria alocada pro mapa
 void liberarMapa(char** mapa) {
     if(mapa != NULL) {
         for(int i = 0; i<LINHAS; i++) {
@@ -100,6 +115,8 @@ void desenharMapa(char** mapa, int screenWidth, int screenHeight, int cellSize) 
     }
 }
 
+// Encontra a posicao inicial do jogador no mapa
+// Retorna o struct PosicaoMapa, se o jogador nao for encontrado retorna {-1,-1}
 PosicaoMapa encontrarPosicaoInicialJogador(char** mapa) {
     PosicaoMapa posicaoInicialJogador = {-1,-1};
 

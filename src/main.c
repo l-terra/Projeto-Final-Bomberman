@@ -5,7 +5,7 @@
 const int screenWidth = 1200;
 const int screenHeight = 600;
 const int cellSize = 20;
-const int hudHeight = 100;
+const int hudHeight = 100; // Area reservada para informacoes do jogador (pontuacao, bombas, vidas...)
 
 int main() {
     InitWindow(screenWidth, screenHeight, "Bomberman");
@@ -28,6 +28,7 @@ int main() {
         return 1;
     }
 
+    // Define a posicao inicial do player
     Vector2 playerPosition = {(float)posicaoInicialJogador.coluna * cellSize, (float)posicaoInicialJogador.linha * cellSize};
     
     while(!WindowShouldClose()) {
@@ -37,15 +38,18 @@ int main() {
         int nextPlayerGridX = currentPlayerGridX;
         int nextPlayerGridY = currentPlayerGridY;
 
+        // Leitura de input
         if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) nextPlayerGridX += 1;
         if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) nextPlayerGridX -= 1;
         if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) nextPlayerGridY -= 1;
         if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) nextPlayerGridY += 1;
 
+        // Checa se o player pode se mover para a celula alvo
         if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS &&
             nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) 
         {
             char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
+            // So pode mover se a celula for vazia ou se tiver inimigo (perde vida)
             if (celulaAlvo == VAZIO || celulaAlvo == INIMIGO) {
                 playerPosition.x = (float)nextPlayerGridX * cellSize;
                 playerPosition.y = (float)nextPlayerGridY * cellSize;
