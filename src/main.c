@@ -1,8 +1,6 @@
 #include "raylib.h"
 #include "gameMap.h"
 #include <stdio.h>
-#include <stdlib.h> // srand()
-#include <time.h> //  seed do srand()
 
 const int screenWidth = 1200;
 const int screenHeight = 600;
