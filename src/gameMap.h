@@ -31,3 +31,7 @@ void liberarMapa(char** gameMap);
 
 // Função responsável por desenhar o mapa na tela
 void desenharMapa(char** gameMap, int screenWidth, int screenHeight, int cellSize);
+
+// Encontra a posicao inicial do jogador no mapa
+// Retorna o struct PosicaoMapa, se o jogador nao for encontrado retorna {-1,-1}
+PosicaoMapa encontrarPosicaoInicialJogador(char** mapa);

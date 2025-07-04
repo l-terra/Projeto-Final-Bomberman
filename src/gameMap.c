@@ -100,3 +100,26 @@ void desenharMapa(char** mapa, int screenWidth, int screenHeight, int cellSize) 
     }
 }
 
+PosicaoMapa encontrarPosicaoInicialJogador(char** mapa) {
+    PosicaoMapa posicaoInicialJogador = {-1,-1};
+
+    if(mapa == NULL) {
+        printf("O MAPA PASSADO PARA 'encontrarPosicaoInicialJogador' É NULO");
+        return posicaoInicialJogador;
+    }
+
+    for(int linha = 0; linha < LINHAS; linha++) {
+        for(int coluna = 0; coluna < COLUNAS; coluna++) {
+            if(mapa[linha][coluna] == INICIO_JOGADOR) {
+                posicaoInicialJogador.linha = linha;
+                posicaoInicialJogador.coluna = coluna;
+                // CELULA DEVE SER ESVAZIADA PARA O PLAYER ENTRAR NA POSICAO
+                mapa[linha][coluna] = VAZIO;
+                return posicaoInicialJogador;
+            }
+        }
+    }
+
+    printf("NAO FOI POSSIVEL ENCONTRAR A POSICAO INICIAL DO JOGADOR NO MAPA!\n");
+    return posicaoInicialJogador; // Retorna {-1,-1}
+}

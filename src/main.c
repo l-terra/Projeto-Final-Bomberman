@@ -9,32 +9,22 @@ const int screenHeight = 600;
 const int cellSize = 20;
 const int hudHeight = 100;
 
-char** mapa;
-char** mapa2;
-
 int main() {
     InitWindow(screenWidth, screenHeight, "Bomberman");
     SetTargetFPS(60);
 
-    mapa = carregarMapa("mapa1.txt");
-
-    // Encontrando posição inicial do jogador no mapa
-    PosicaoMapa posicaoInicialJogador = {-1,-1};
-    for(int linha = 0; linha < LINHAS; linha++) {
-        for(int coluna = 0; coluna < COLUNAS; coluna++) {
-            if(mapa[linha][coluna] == INICIO_JOGADOR) {
-                posicaoInicialJogador.linha = linha;
-                posicaoInicialJogador.coluna = coluna;
-                // CELULA DEVE SER ESVAZIADA PARA O PLAYER ENTRAR NA POSICAO
-                mapa[linha][coluna] = VAZIO;
-                break;
-            }
-        }
-        if (posicaoInicialJogador.linha != -1) break;
+    char** mapa = carregarMapa("mapa1.txt");
+    if (mapa == NULL) {
+        printf("ERRO AO CARREGAR MAPA NA MAIN!");
+        CloseWindow();
+        return 1;
     }
 
+    // Encontrando posição inicial do jogador no mapa
+    PosicaoMapa posicaoInicialJogador = encontrarPosicaoInicialJogador(mapa);
+
     if(posicaoInicialJogador.linha == -1) {
-        printf("NAO FOI POSSIVEL ENCONTRAR A POSICAO INICIAL DO JOGADOR NO MAPA!\n");
+        // A mensagem de erro já é gerada dentro de 'encontrarPosicaoInicialJogador()'
         liberarMapa(mapa);
         CloseWindow();
         return 1;
