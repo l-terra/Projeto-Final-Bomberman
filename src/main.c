@@ -1,6 +1,7 @@
 #include "raylib.h"
-#include <stdlib.h>
-#include <time.h>
+#include "gameMap.h"
+#include <stdlib.h> // srand()
+#include <time.h> //  seed do srand()
 
 const int screenWidth = 800;
 const int screenHeight = 800;
@@ -11,27 +12,11 @@ const int gridHeight = screenHeight / cellSize;
 
 int gameMap[40][40];
 
-void initializeGameMap() {
-    srand(time(NULL));
-
-    for(int row = 0; row < gridHeight; row++) {
-        for(int col = 0; col < gridWidth; col++) {
-            // Randomly set cells as free (0) or obstacle (1)
-            // Adjust the likelihood by changing the modulo value (e.g., % 4 for 25% obstacles)
-            gameMap[row][col] = (rand() % 5 == 0) ? 1 : 0; // Approx. 20% chance of an obstacle
-
-            if(row == 20 && col == 20) {
-                gameMap[row][col] = 0;
-            }
-        }
-    }
-}
-
 int main() {
     InitWindow(screenWidth, screenHeight, "Movimento");
     SetTargetFPS(60);
 
-    initializeGameMap();
+    initializeGameMap(gridHeight, gridWidth, gameMap);
 
     Vector2 playerPosition = {400.0f, 400.0f};
     
@@ -56,17 +41,8 @@ int main() {
             }
         }
 
-        if(playerPosition.x < 0 ||
-           playerPosition.x + cellSize > screenWidth || 
-           playerPosition.y < 0 ||
-           playerPosition.y + cellSize > screenHeight) 
-        {
-            break; 
-        }
-
         BeginDrawing();
-
-            ClearBackground(RAYWHITE);
+            ClearBackground(WHITE);
             DrawText("MOVA O QUADRADO COM AS SETINHAS", 10, 10, 20, DARKPURPLE);
 
             for(int row = 0; row < gridHeight; row++) {
