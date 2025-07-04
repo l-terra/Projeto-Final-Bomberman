@@ -89,6 +89,9 @@ void desenharMapa(char** mapa, int screenWidth, int screenHeight, int cellSize) 
                 // Se for caixa -> marrom
                 DrawRectangle(coluna * cellSize, linha * cellSize, cellSize, cellSize, BROWN);
             }
+            if(mapa[linha][coluna] == INIMIGO) {
+                DrawRectangle(coluna * cellSize, linha * cellSize, cellSize, cellSize, PURPLE);
+            }
             if(mapa[linha][coluna] == VAZIO) {
                 // Fundo para áreas vazias
                 DrawRectangle(coluna * cellSize, linha * cellSize, cellSize, cellSize, RAYWHITE);

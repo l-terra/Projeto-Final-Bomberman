@@ -1,6 +1,5 @@
 #include "raylib.h"
 #include "gameMap.h"
-//#include "oldGameMap.h"
 #include <stdio.h>
 #include <stdlib.h> // srand()
 #include <time.h> //  seed do srand()
@@ -11,17 +10,13 @@ const int cellSize = 20;
 const int hudHeight = 100;
 
 char** mapa;
+char** mapa2;
 
 int main() {
     InitWindow(screenWidth, screenHeight, "Bomberman");
     SetTargetFPS(60);
 
     mapa = carregarMapa("mapa1.txt");
-    if(mapa == NULL) {
-        printf("ERRO AO CARREGAR MAPA NA MAIN!");
-        CloseWindow();
-        return 1;
-    }
 
     // Encontrando posição inicial do jogador no mapa
     PosicaoMapa posicaoInicialJogador = {-1,-1};
