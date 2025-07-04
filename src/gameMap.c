@@ -62,6 +62,7 @@ char** carregarMapa(const char* nomeArquivo) {
             printf("ERRO DURANTE A LEITURA DO ARQUIVO!");
             for(int j = 0; j<COLUNAS; j++) {
                 mapa[i][j] = VAZIO;
+                return NULL;
             }
         }
     }
