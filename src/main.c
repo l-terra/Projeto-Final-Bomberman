@@ -81,6 +81,9 @@ int main() {
             char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
             // So pode mover se a celula for vazia ou se tiver inimigo (perde vida)
             if (celulaAlvo == VAZIO || celulaAlvo == INIMIGO) {
+                playerGridPosicao.coluna = nextPlayerGridX;
+                playerGridPosicao.linha = nextPlayerGridY;
+
                 playerPosition.x = (float)nextPlayerGridX * cellSize;
                 playerPosition.y = (float)nextPlayerGridY * cellSize;
             }
