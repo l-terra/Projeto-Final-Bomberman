@@ -16,7 +16,7 @@ void iniciarBomba(Bomba* bomba, PosicaoMapa posicao, double tempoParaExplodir) {
 void desenharBomba(const Bomba* bomba, int cellSize) {
     if (bomba != NULL && bomba->ativa) {
         // Desenha a bomba (um círculo simples, por exemplo)
-        // Cor pode mudar para indicar o tempo restante
+        // Cor muda para indicar o tempo restante
         Color corBomba = DARKBLUE;
         if (bomba->tempoParaExplodir < 1.0) { // Menos de 1 segundo para explodir
             corBomba = BLACK;
@@ -72,7 +72,7 @@ void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, Posicao
         }
     }
 
-    // Verificar se o jogador está no raio de destruição da bomba quando ela explode [cite: 46]
+    // Verificar se o jogador está no raio de destruição da bomba quando ela explode
     // A posição do jogador é em pixels, precisa converter para grid
     int playerGridX = playerPos.coluna; // Usando a coluna da PosicaoMapa do jogador
     int playerGridY = playerPos.linha; // Usando a linha da PosicaoMapa do jogador

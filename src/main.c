@@ -20,8 +20,7 @@ int pontuacaoJogador = 0; // Pontuação inicial
 PosicaoMapa playerGridPosicao;
 Vector2 playerPosition;
 
-// Prototipo para uma funcao auxiliar para adicionar bombas
-// Implementação da função auxiliar para adicionar bombas
+// Função auxiliar para adicionar bombas
 void addBomb(PosicaoMapa posicao, double tempoParaExplodir) {
     if (bombasAtivas < MAX_BOMBAS) {
         iniciarBomba(&bombas[bombasAtivas], posicao, tempoParaExplodir);
@@ -53,20 +52,14 @@ int main() {
         return 1;
     }
 
-    playerGridPosicao = posicaoInicialJogador;
     // Define a posicao inicial do player
+    playerGridPosicao = posicaoInicialJogador;
     playerPosition = (Vector2){(float)playerGridPosicao.coluna * cellSize, (float)playerGridPosicao.linha * cellSize};
     
     while(!WindowShouldClose()) {
         // --- Atualização da Posição do Jogador ---
         int nextPlayerGridX = playerGridPosicao.coluna;
         int nextPlayerGridY = playerGridPosicao.linha;
-
-        /*int currentPlayerGridX = (int)playerPosition.x/cellSize;
-        int currentPlayerGridY = (int)playerPosition.y/cellSize;
-
-        int nextPlayerGridX = currentPlayerGridX;
-        int nextPlayerGridY = currentPlayerGridY;*/
 
         // Leitura de input
         if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) nextPlayerGridX += 1;
@@ -91,23 +84,13 @@ int main() {
 
         // --- Lógica para plantar bomba ---
         if (IsKeyPressed(KEY_B) && bombasDisponiveis > 0) { // Tecla B: Planta bomba
-            // Calcula a posição à frente do jogador 
-            // Para simplificar, vamos colocar na própria célula do jogador se for vazia para este exemplo
-            // Você vai precisar de uma lógica mais complexa para "uma posição à frente" dependendo da direção que o jogador está olhando.
-            // Por enquanto, vamos considerar a célula atual do jogador.
-
+            // coloca bomba na própria célula do jogador se for vazia
             PosicaoMapa posicaoBomba = playerGridPosicao;
 
             // Bombas só podem ser plantadas em áreas vazias 
             if (mapa[posicaoBomba.linha][posicaoBomba.coluna] == VAZIO) {
                 addBomb(posicaoBomba, TEMPO_EXPLOSAO);
                 bombasDisponiveis--; // Decrementa estoque de bombas 
-                // Marcar a célula do mapa como 'bomba' para que o jogador não possa andar nela imediatamente
-                // Você pode definir um novo TipoCelulaMapa para BOMB_PLANTED.
-                // Por agora, vamos marcar como um 'X' temporário ou um char que não seja VAZIO.
-                // Ou, a bomba será tratada como um obstáculo, então o jogador não deve entrar.
-                // Para este exemplo, não vamos alterar o mapa para a bomba plantada,
-                // mas a lógica de colisão para a bomba (como obstáculo) precisará ser implementada.
             }
         }
 

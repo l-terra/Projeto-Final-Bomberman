@@ -9,7 +9,7 @@
 
 // Estrutura para representar uma bomba
 typedef struct {
-    PosicaoMapa posicao;           // Posição da bomba no grid (linha, coluna)
+    PosicaoMapa posicao;            // Posição da bomba no grid (linha, coluna)
     double tempoParaExplodir;      // Tempo restante para explodir (em segundos)
     bool ativa;                   // Indica se a bomba está ativa
 } Bomba;
