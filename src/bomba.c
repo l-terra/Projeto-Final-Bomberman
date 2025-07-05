@@ -2,8 +2,9 @@
 #include "bomba.h"
 #include "gameMap.h"
 #include <stdio.h> // Para NULL
-#include <stdlib.h>
+#include <stdlib.h> // para abs()
  // teste
+
 // Função para inicializar uma nova bomba
 void iniciarBomba(Bomba* bomba, PosicaoMapa posicao, double tempoParaExplodir) {
     if (bomba != NULL) {
@@ -18,10 +19,8 @@ void desenharBomba(const Bomba* bomba, int cellSize) {
     if (bomba != NULL && bomba->ativa) {
         // Desenha a bomba (um círculo simples, por exemplo)
         // Cor muda para indicar o tempo restante
-        Color corBomba = DARKBLUE;
+        Color corBomba = BLACK;
         if (bomba->tempoParaExplodir < 1.0) { // Menos de 1 segundo para explodir
-            corBomba = BLACK;
-        } else if (bomba->tempoParaExplodir < 2.0) { // Menos de 2 segundos para explodir
             corBomba = ORANGE;
         }
         DrawCircle(bomba->posicao.coluna * cellSize + cellSize / 2,
