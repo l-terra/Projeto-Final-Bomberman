@@ -97,7 +97,7 @@ int main() {
         // --- Atualização das Bombas ---
         for (int i = 0; i < bombasAtivas; ) {
             // Se a bomba explodiu, a função atualizarBomba retorna true e a removemos do array
-            if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, posicaoInicialJogador, &bombasDisponiveis)) {
+            if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis)) {
                 // Remove a bomba do array, movendo a última para a posição atual
                 bombas[i] = bombas[bombasAtivas - 1];
                 bombasAtivas--;
