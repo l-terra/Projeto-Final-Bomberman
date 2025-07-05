@@ -3,7 +3,7 @@
 #include "gameMap.h"
 #include <stdio.h> // Para NULL
 #include <stdlib.h>
-
+ // teste
 // Função para inicializar uma nova bomba
 void iniciarBomba(Bomba* bomba, PosicaoMapa posicao, double tempoParaExplodir) {
     if (bomba != NULL) {
