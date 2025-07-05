@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "bomba.h"
+#include "gameMap.h"
 #include <stdio.h> // Para NULL
 #include <stdlib.h>
 
@@ -31,11 +32,7 @@ void desenharBomba(const Bomba* bomba, int cellSize) {
 }
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
-void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, int cellSize) {
-    // Calculando o centro da explosão em coordenadas de pixel para referência
-    int bombCenterX = bombPos.coluna * cellSize + cellSize / 2;
-    int bombCenterY = bombPos.linha * cellSize + cellSize / 2;
-
+void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos) {
     // A explosão afeta uma região de 100x100 pixels em formato de cruz centrado na bomba 
     // 100 pixels / 20 pixels/célula = 5 células
     // Isso significa 2 células para cima, 2 para baixo, 2 para esquerda, 2 para direita, além da célula central.
@@ -103,7 +100,7 @@ bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int
     bomb->tempoParaExplodir -= deltaTime;
 
     if (bomb->tempoParaExplodir <= 0) {
-        explosao(bomb->posicao, mapa, pontos, vidas, playerPos, 0); // cellSize pode não ser necessário aqui
+        explosao(bomb->posicao, mapa, pontos, vidas, playerPos);
         bomb->ativa = false; // Desativa a bomba
         *bombasDisponiveis += 1; // Quando uma bomba plantada explode, o estoque é incrementado 
         TraceLog(LOG_INFO, "Bomba explodiu em (%d, %d). Bombas disponiveis: %d", bomb->posicao.coluna, bomb->posicao.linha, *bombasDisponiveis);

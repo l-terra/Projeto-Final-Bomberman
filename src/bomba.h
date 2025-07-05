@@ -28,4 +28,4 @@ bool atualizarBomba(Bomba* bomba, double deltaTime, char** mapa, int* pontos, in
 // bombasDisponiveis para incrementar o estoque.
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
-void explosao(PosicaoMapa posicaoBomba, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer, int cellSize);
+void explosao(PosicaoMapa posicaoBomba, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer);
