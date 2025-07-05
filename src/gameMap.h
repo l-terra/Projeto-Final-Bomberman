@@ -1,3 +1,6 @@
+#ifndef GAMEMAP_H
+#define GAMEMAP_H
+
 #include "raylib.h"
 
 // Tipos possíveis de células que teremos nos mapas
@@ -35,3 +38,4 @@ void desenharMapa(char** gameMap, int screenWidth, int screenHeight, int cellSiz
 // Encontra a posicao inicial do jogador no mapa
 // Retorna o struct PosicaoMapa, se o jogador nao for encontrado retorna {-1,-1}
 PosicaoMapa encontrarPosicaoInicialJogador(char** mapa);
+#endif
