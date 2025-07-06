@@ -162,13 +162,29 @@ int main() {
             // Lógica de fim de jogo (se vidas chegar a 0)
             if (vidasJogador <= 0) {
                 TraceLog(LOG_INFO, "Fim de Jogo! Pontuacao Final: %d", pontuacaoJogador);
-                // Você pode adicionar uma tela de "Game Over" aqui
-                // Por agora, vamos voltar para o menu principal
-                estadoAtualDoJogo = ESTADO_MENU;
-                liberarMapa(mapa); // Libera o mapa ao "terminar" o jogo
-                mapa = NULL; // Garante que um novo jogo será carregado
+                estadoAtualDoJogo = ESTADO_GAMEOVER; // Mude para ESTADO_GAMEOVER
+                // Não libera o mapa aqui ainda, você pode querer exibi-lo no fundo da tela de game over ou liberar depois de um input.
+                // liberarMapa(mapa);
+                // mapa = NULL;
             }
         }
+        else if (estadoAtualDoJogo == ESTADO_GAMEOVER) {
+            BeginDrawing();
+                ClearBackground(BLACK); // Fundo preto para a tela de Game Over
+
+                DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 80) / 2, screenHeight / 4, 80, RED);
+                DrawText(TextFormat("Pontuacao Final: %d", pontuacaoJogador),
+                         screenWidth / 2 - MeasureText(TextFormat("Pontuacao Final: %d", pontuacaoJogador), 40) / 2,
+                         screenHeight / 2, 40, WHITE);
+
+                DrawText("Pressione ENTER para voltar ao Menu",
+                         screenWidth / 2 - MeasureText("Pressione ENTER para voltar ao Menu", 20) / 2,
+                         screenHeight / 2 + 80, 20, GRAY);
+                DrawText("Pressione Q para Sair do Jogo",
+                         screenWidth / 2 - MeasureText("Pressione Q para Sair do Jogo", 20) / 2,
+                         screenHeight / 2 + 120, 20, GRAY);
+
+            EndDrawing();
     }
 
     // Libera o mapa apenas se ele não for NULL (pode ser NULL se o jogo for encerrado do menu sem iniciar um jogo)
