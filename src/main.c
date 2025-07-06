@@ -196,6 +196,7 @@ int main() {
                          screenHeight / 2 + 120, 20, GRAY);
 
             EndDrawing();
+        }
     }
 
     // Libera o mapa apenas se ele não for NULL (pode ser NULL se o jogo for encerrado do menu sem iniciar um jogo)
