@@ -30,6 +30,54 @@ void desenharBomba(const Bomba* bomba, int cellSize) {
     }
 }
 
+
+RastroExplosao rastros_ativos [MAX_RASTROS];
+int num_rastros_ativos = 0;
+
+
+//desenha o fogo da bomba
+void desenha_rastro(PosicaoMapa bombPos, char** mapa){
+    for(int l = 0; l<LINHAS ; l++){
+        for(int c = 0; c<COLUNAS; c++){
+            // verifica se precisamos desenhar o fogo na posicao
+            bool alcance_do_fogo = false;
+
+            if(l == bombPos.linha && abs(c - bombPos.coluna) <= CELULAS_ALCANCE_EXPLOSAO){
+                alcance_do_fogo = true;
+            }
+
+            if (c == bombPos.coluna && abs(l - bombPos.linha) <= CELULAS_ALCANCE_EXPLOSAO){
+                alcance_do_fogo = true;
+            }
+
+            if (alcance_do_fogo){
+                DrawRectangle(c * CellSize,l * CellSize, CellSize, CellSize, ORANGE);
+            }
+        }
+    }
+}
+
+// atualiza o rastro e desenha ele
+void Desenha_fogo_bomba(double deltaTime, char** mapa) {
+    // Itera sobre os rastros ativos, do primeiro ao último
+    for (int i = 0; i < num_rastros_ativos; ) {
+        // Decrementa o tempo restante do rastro
+        rastros_ativos[i].tempoRestante -= deltaTime;
+
+        if (rastros_ativos[i].tempoRestante <= 0) {
+            // Se o tempo acabou, removemos este rastro.
+            TraceLog(LOG_INFO, "Rastro em (%d, %d) expirou. Removendo...", rastros_ativos[i].posicao.coluna, rastros_ativos[i].posicao.linha);
+            rastros_ativos[i] = rastros_ativos[num_rastros_ativos - 1];
+            num_rastros_ativos--;
+        } else {
+            // Se o rastro ainda está ativo, desenhe-o
+            desenha_rastro(rastros_ativos[i].posicao, mapa);
+            i++; 
+        }
+    }
+}
+
+
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
 void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos) {
     // A explosão afeta uma região de 100x100 pixels em formato de cruz centrado na bomba 
@@ -100,6 +148,13 @@ bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int
 
     if (bomb->tempoParaExplodir <= 0) {
         explosao(bomb->posicao, mapa, pontos, vidas, playerPos);
+        // Adiciona um novo rastro à lista de rastros ativos
+        if (num_rastros_ativos < MAX_RASTROS) {
+            rastros_ativos[num_rastros_ativos].posicao = bomb->posicao;
+            rastros_ativos[num_rastros_ativos].tempoRestante = TEMPO_RASTRO_MAX;
+            num_rastros_ativos++;
+            TraceLog(LOG_INFO, "Novo rastro de explosao adicionado em (%d, %d). Rastros ativos: %d", bomb->posicao.coluna, bomb->posicao.linha, num_rastros_ativos);
+        }
         bomb->ativa = false; // Desativa a bomba
         *bombasDisponiveis += 1; // Quando uma bomba plantada explode, o estoque é incrementado 
         TraceLog(LOG_INFO, "Bomba explodiu em (%d, %d). Bombas disponiveis: %d", bomb->posicao.coluna, bomb->posicao.linha, *bombasDisponiveis);

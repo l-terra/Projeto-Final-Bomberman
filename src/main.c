@@ -120,7 +120,8 @@ int main() {
             for (int i = 0; i < bombasAtivas; i++) {
                 desenharBomba(&bombas[i], cellSize);
             }
-
+            //desenhar o fogo da bomba
+            Desenha_fogo_bomba(GetFrameTime(),mapa);
             // desenha o jogador
             DrawRectangle((int)playerPosition.x, (int)playerPosition.y, cellSize, cellSize, RED);
 

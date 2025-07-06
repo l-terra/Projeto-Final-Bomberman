@@ -24,6 +24,7 @@ typedef struct {
 // Definir tamanho padrão do mapa
 #define LINHAS 25
 #define COLUNAS 60
+#define CellSize 20
 
 // Função para carregar o mapa a partir de um arquivo de texto
 // Retorna um ponteiro para a matriz do mapa alocada dinamicamente

@@ -1,6 +1,8 @@
 #include "raylib.h"
 #include "gameMap.h"
 
+#define MAX_RASTROS 10
+#define TEMPO_RASTRO_MAX 0.75
 #define TEMPO_EXPLOSAO 3.0f // Tempo em segundos para a bomba explodir 
 #define CELULAS_ALCANCE_EXPLOSAO 2 
 // Alcance da explosão em células (100 pixels / 20 pixels/celula = 5 células no total, 2 para cada lado + centro)
@@ -13,6 +15,13 @@ typedef struct {
     double tempoParaExplodir;      // Tempo restante para explodir (em segundos)
     bool ativa;                   // Indica se a bomba está ativa
 } Bomba;
+
+//estrutura do tempo do rastro da bomba
+typedef struct {
+
+    PosicaoMapa posicao;
+    double tempoRestante;
+}RastroExplosao;
 
 // Função para inicializar uma nova bomba
 void iniciarBomba(Bomba* bomba, PosicaoMapa posicao, double tempoParaExplodir);
@@ -29,3 +38,9 @@ bool atualizarBomba(Bomba* bomba, double deltaTime, char** mapa, int* pontos, in
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
 void explosao(PosicaoMapa posicaoBomba, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer);
+
+// Função para desenhar o rastro da explosão
+void desenha_rastro(PosicaoMapa posicaoBomba, char** mapa);
+
+// desenha o fogo da bomba na main
+void Desenha_fogo_bomba(double deltaTime,char **mapa);
