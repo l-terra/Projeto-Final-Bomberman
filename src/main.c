@@ -1,7 +1,8 @@
 #include "raylib.h"
 #include "gameMap.h"
 #include "bomba.h"
-#include "menu.h" 
+#include "menu.h"
+#include "inimigo.h"
 #include <stdio.h>
 
 #define MAX_BOMBAS 5
@@ -18,6 +19,9 @@ int bombasAtivas = 0; // Contador de bombas ativas
 int bombasDisponiveis;
 int vidasJogador;
 int pontuacaoJogador;
+
+Inimigo* inimigos = NULL;
+int numInimigos = 0;
 
 PosicaoMapa playerGridPosicao;
 Vector2 playerPosition;
@@ -57,6 +61,10 @@ int main() {
                                     cellSize);
                     bombasAtivas = 0; // Garante que as bombas ativas também são zeradas para um novo jogo
                     // A limpeza de rastros de explosão não pode ser feita aqui sem modificar bomba.c
+
+                    liberarInimigos(&inimigos, &numInimigos);          // Limpa inimigos de um jogo anterior
+                    carregarInimigos(mapa, &inimigos, &numInimigos); // Carrega os novos do mapa
+
                     estadoAtualDoJogo = ESTADO_JOGANDO; // Muda para o estado de jogo
                     break;
                 case CONTINUAR_JOGO:
@@ -137,6 +145,8 @@ int main() {
                 pontuacaoJogador = 0;
             }
 
+            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime());
+
             BeginDrawing();
                 ClearBackground(WHITE);
 
@@ -149,6 +159,7 @@ int main() {
                 // desenhar o fogo da bomba (já estava no seu main.c)
                 Desenha_fogo_bomba(GetFrameTime(),mapa);
 
+                desenharInimigos(inimigos, numInimigos, cellSize);
                 // desenha o jogador
                 DrawRectangle((int)playerPosition.x, (int)playerPosition.y, cellSize, cellSize, RED);
 
@@ -185,12 +196,14 @@ int main() {
                          screenHeight / 2 + 120, 20, GRAY);
 
             EndDrawing();
+        }
     }
 
     // Libera o mapa apenas se ele não for NULL (pode ser NULL se o jogo for encerrado do menu sem iniciar um jogo)
     if (mapa != NULL) {
         liberarMapa(mapa);
     }
+    liberarInimigos(&inimigos, &numInimigos);
     CloseWindow();
     return 0;
 }
