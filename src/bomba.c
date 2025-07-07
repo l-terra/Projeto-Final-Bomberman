@@ -132,7 +132,6 @@ bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, P
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
 void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos) {
-    bool jogadorAtingido = false;
 
     // Processa a própria célula da bomba primeiro
     processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, bombPos.linha,bombPos.coluna);
