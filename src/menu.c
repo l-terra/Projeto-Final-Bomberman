@@ -48,8 +48,8 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
 }
 
 // Função para iniciar um novo jogo
-void iniciarNovoJogo(char*** mapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition,
-                    int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas,
+void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition,
+                    int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas, int* nivelAtual,
                     int cellSize) {
     // Libera o mapa existente se houver
     if (*mapa != NULL) {
@@ -57,8 +57,10 @@ void iniciarNovoJogo(char*** mapa, PosicaoMapa* playerGridPosicao, Vector2* play
         *mapa = NULL; // Importante: Garante que o ponteiro é NULL após liberar
     }
 
+    *nivelAtual = 1;
     // Carrega um novo mapa (sempre "mapa1.txt" para um novo jogo)
-    *mapa = carregarMapa("mapa1.txt");
+    sprintf(nomeMapa, "mapa%d.txt", *nivelAtual);
+    *mapa = carregarMapa(nomeMapa);
     if (*mapa == NULL) {
         TraceLog(LOG_ERROR, "ERRO: Nao foi possivel carregar o mapa para um novo jogo!");
         exit(1);

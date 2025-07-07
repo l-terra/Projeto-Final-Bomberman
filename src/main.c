@@ -20,6 +20,8 @@ int bombasDisponiveis;
 int vidasJogador;
 int pontuacaoJogador;
 int chavesColetadas;
+int nivelAtual;
+char nomeMapa[32];
 
 // <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
@@ -52,8 +54,8 @@ int main() {
 
             switch (selecaoMenu) {
                 case NOVO_JOGO:
-                    iniciarNovoJogo(&mapa, &playerGridPosicao, &playerPosition,
-                                    &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas,
+                    iniciarNovoJogo(&mapa, nomeMapa, &playerGridPosicao, &playerPosition,
+                                    &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas, &nivelAtual,
                                     cellSize);
                     bombasAtivas = 0;
                     liberarInimigos(&inimigos, &numInimigos); // <--- Garante que inimigos antigos são liberados
@@ -63,8 +65,8 @@ int main() {
                 case CONTINUAR_JOGO:
                     if (mapa == NULL) {
                         TraceLog(LOG_WARNING, "Nenhum jogo em andamento. Iniciando um Novo Jogo.");
-                        iniciarNovoJogo(&mapa, &playerGridPosicao, &playerPosition,
-                                        &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas,
+                        iniciarNovoJogo(&mapa, nomeMapa, &playerGridPosicao, &playerPosition,
+                                        &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas, &nivelAtual,
                                         cellSize);
                         bombasAtivas = 0;
                         // inimigos seriam carregados aqui se fosse um fallback, mas a lógica de um "continue"
@@ -92,15 +94,31 @@ int main() {
             if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) nextPlayerGridY += 1;
 
             if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS &&
-                nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS)
-            {
+                nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
                 char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
-                if (celulaAlvo == VAZIO || celulaAlvo == INIMIGO) {
+                if (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE) {
                     playerGridPosicao.coluna = nextPlayerGridX;
                     playerGridPosicao.linha = nextPlayerGridY;
 
                     playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
                     playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+
+                    if (celulaAlvo == CHAVE) {
+                        chavesColetadas++;
+                        celulaAlvo == VAZIO;
+
+                        if (chavesColetadas == 5) {
+                            char nomeNovoMapa[32];
+                            sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
+                            FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
+                            if (arquivoNovoMapa == NULL) {
+                                estadoAtualDoJogo = ESTADO_ZERADO;
+                            } else {
+                                fclose(arquivoNovoMapa);
+                                estadoAtualDoJogo = ESTADO_VITORIA;
+                            }
+                        } 
+                    }
                 }
             }
 
@@ -195,6 +213,38 @@ int main() {
                          screenWidth / 2 - MeasureText("Pressione Q para Sair do Jogo", 20) / 2,
                          screenHeight / 2 + 120, 20, GRAY);
 
+            EndDrawing();
+        } else if (estadoAtualDoJogo == ESTADO_VITORIA) {
+            if (IsKeyPressed(KEY_ENTER)) {
+                nivelAtual++;
+                chavesColetadas = 0;
+
+                liberarMapa(mapa);
+
+                sprintf(nomeMapa, "mapa%d.txt", nivelAtual);
+                if (!carregarMapa(nomeMapa)) {
+                    CloseWindow();
+                    exit(1);
+                }
+                estadoAtualDoJogo = ESTADO_JOGANDO;
+            }
+
+            BeginDrawing();
+                DrawText("NÍVEL CONCLUÍDO!", GetScreenWidth()/2 - MeasureText("NÍVEL CONCLUÍDO!", 50)/2, 250, 50, GOLD);
+                DrawText("Pressione [ENTER] para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione [ENTER] para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
+            EndDrawing();
+        } else if (estadoAtualDoJogo == ESTADO_ZERADO) {
+            if (IsKeyPressed(KEY_ENTER)) {
+                estadoAtualDoJogo = ESTADO_MENU;
+            } else if (IsKeyPressed (KEY_Q)) {
+                estadoAtualDoJogo = ESTADO_SAIR;
+            }
+            
+            BeginDrawing();
+                ClearBackground(BLACK);
+                DrawText("PARABENS!", GetScreenWidth()/2 - MeasureText("PARABENS!", 60)/2, 250, 60, LIME);
+                DrawText("Voce zerou o jogo!", GetScreenWidth()/2 - MeasureText("Voce zerou o jogo!", 40)/2, 320, 40, GREEN);
+                DrawText("Pressione ENTER para voltar ao menu ou Q para sair.", GetScreenWidth()/2 - MeasureText("Pressione ESC para sair.", 20)/2, 450, 20, RAYWHITE);
             EndDrawing();
         }
 

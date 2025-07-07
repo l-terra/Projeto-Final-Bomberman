@@ -11,6 +11,7 @@ typedef enum {
     ESTADO_PAUSADO,
     ESTADO_GAMEOVER,
     ESTADO_VITORIA,
+    ESTADO_ZERADO,
     ESTADO_SAIR
 } EstadoJogo;
 
@@ -25,7 +26,7 @@ typedef enum {
 OpcaoMenu exibirMenu(int screenWidth, int screenHeight);
 
 // Declaração da função para iniciar um novo jogo
-void iniciarNovoJogo(char*** mapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition, int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas, int cellSize);
+void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition, int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas, int* nivelAtual, int cellSize);
 
 // Se houver alguma função para desenhar fogo da bomba no menu ou main
 void Desenha_fogo_bomba(double deltaTime, char** mapa); // Esta função aparece no main.c, deve ser declarada em bomba.h ou menu.h se for usada aqui. Sugiro bomba.h.
