@@ -36,22 +36,34 @@ int num_rastros_ativos = 0;
 
 
 //desenha o fogo da bomba
-void desenha_rastro(PosicaoMapa bombPos, char** mapa){
-    for(int l = 0; l<LINHAS ; l++){
-        for(int c = 0; c<COLUNAS; c++){
-            // verifica se precisamos desenhar o fogo na posicao
-            bool alcance_do_fogo = false;
+void desenha_rastro(PosicaoMapa bombPos, char** mapa) {
+    // Desenha o centro da explosão
+    DrawRectangle(bombPos.coluna * CellSize, bombPos.linha * CellSize, CellSize, CellSize, RED);
 
-            if(l == bombPos.linha && abs(c - bombPos.coluna) <= CELULAS_ALCANCE_EXPLOSAO){
-                alcance_do_fogo = true;
+    // Expande a explosão em 4 direções (direita, esquerda, baixo, cima)
+    for (int dir = 0; dir < 4; dir++) {
+        for (int i = 1; i <= CELULAS_ALCANCE_EXPLOSAO; i++) {
+            int l = bombPos.linha;
+            int c = bombPos.coluna;
+
+            if (dir == 0) c += i; // Direita
+            if (dir == 1) c -= i; // Esquerda
+            if (dir == 2) l += i; // Baixo
+            if (dir == 3) l -= i; // Cima
+
+            // Verifica se está dentro dos limites do mapa
+            if (l < 0 || l >= LINHAS || c < 0 || c >= COLUNAS) {
+                break; // Para a expansão nesta direção se sair do mapa
             }
 
-            if (c == bombPos.coluna && abs(l - bombPos.linha) <= CELULAS_ALCANCE_EXPLOSAO){
-                alcance_do_fogo = true;
-            }
+            // Desenha o fogo na célula atual
+            DrawRectangle(c * CellSize, l * CellSize, CellSize, CellSize, ORANGE);
 
-            if (alcance_do_fogo){
-                DrawRectangle(c * CellSize,l * CellSize, CellSize, CellSize, ORANGE);
+            // Se a célula atual contém uma parede (destrutível ou não), a explosão para aqui.
+            char celulaAtual = mapa[l][c];
+            if (celulaAtual == PAREDE_INDESTRUTIVEL|| celulaAtual == PAREDE_DESTRUTIVEL ||
+                celulaAtual == CAIXA_COM_CHAVE || celulaAtual == CAIXA_SEM_CHAVE) {
+                break; // Para a expansão nesta direção
             }
         }
     }
@@ -80,57 +92,66 @@ void Desenha_fogo_bomba(double deltaTime, char** mapa) {
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
 void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos) {
-    // 1. Destruição de paredes e caixas
-    for (int l = 0; l < LINHAS; l++) {
-        for (int c = 0; c < COLUNAS; c++) {
-            bool dentroDoAlcance = false;
-            if (l == bombPos.linha && abs(c - bombPos.coluna) <= CELULAS_ALCANCE_EXPLOSAO) dentroDoAlcance = true;
-            if (c == bombPos.coluna && abs(l - bombPos.linha) <= CELULAS_ALCANCE_EXPLOSAO) dentroDoAlcance = true;
+    bool jogadorAtingido = false;
 
-            if (dentroDoAlcance) {
-                char celulaAfetada = mapa[l][c];
-                if (celulaAfetada == PAREDE_DESTRUTIVEL || celulaAfetada == CAIXA_COM_CHAVE || celulaAfetada == CAIXA_SEM_CHAVE) {
-                    mapa[l][c] = VAZIO;
-                    *pontos += 10;
-                }
-                // REMOVIDO: A verificação de 'INIMIGO' foi removida daqui, pois era incorreta.
+    // Função interna para processar cada célula afetada pela explosão
+    // Retorna true se a explosão deve parar, false se deve continuar
+    bool processaCelula(int l, int c){
+        // Verifica se a célula está fora do mapa
+        if (l < 0 || l >= LINHAS || c < 0 || c >= COLUNAS) {
+            return true; // Para a explosão
+        }
+
+        // 1. Dano ao Jogador
+        if (!jogadorAtingido && playerPos.linha == l && playerPos.coluna == c) {
+            *vidas -= 1;
+            *pontos -= 100;
+            if (*pontos < 0) *pontos = 0;
+            TraceLog(LOG_INFO, "Jogador atingido pela explosao! Vidas: %d", *vidas);
+            jogadorAtingido = true; // Evita dano múltiplo pela mesma bomba
+        }
+
+        // 2. Dano aos Inimigos
+        for (int i = 0; i < num_inimigos; i++) {
+            if (lista_inimigos[i].ativo && lista_inimigos[i].posicao.linha == l && lista_inimigos[i].posicao.coluna == c) {
+                lista_inimigos[i].ativo = false;
+                *pontos += 20;
+                TraceLog(LOG_INFO, "Inimigo %d foi atingido pela explosao!", i);
             }
         }
-    }
 
-    // 2. Dano ao jogador
-    bool playerInExplosionRange = false;
-    if (playerPos.linha == bombPos.linha && abs(playerPos.coluna - bombPos.coluna) <= CELULAS_ALCANCE_EXPLOSAO) playerInExplosionRange = true;
-    if (playerPos.coluna == bombPos.coluna && abs(playerPos.linha - bombPos.linha) <= CELULAS_ALCANCE_EXPLOSAO) playerInExplosionRange = true;
-
-    if (playerInExplosionRange) {
-        *vidas -= 1;
-        *pontos -= 100;
-        if (*pontos < 0) *pontos = 0;
-        TraceLog(LOG_INFO, "Jogador atingido pela explosao! Vidas: %d", *vidas);
-    }
-
-    // 3. Matar inimigos
-    // Itera sobre todos os inimigos para ver se foram atingidos.
-    for (int i = 0; i < num_inimigos; i++) {
-        // Pula o inimigo se ele já estiver inativo.
-        if (!lista_inimigos[i].ativo) continue;
-
-        PosicaoMapa inimigoPos = lista_inimigos[i].posicao;
-        bool inimigoAtingido = false;
-
-        // Verifica se a posição do inimigo está no alcance da explosão (eixo horizontal ou vertical)
-        if (inimigoPos.linha == bombPos.linha && abs(inimigoPos.coluna - bombPos.coluna) <= CELULAS_ALCANCE_EXPLOSAO) {
-            inimigoAtingido = true;
-        }
-        if (inimigoPos.coluna == bombPos.coluna && abs(inimigoPos.linha - bombPos.linha) <= CELULAS_ALCANCE_EXPLOSAO) {
-            inimigoAtingido = true;
+        // 3. Interação com o Mapa (Paredes)
+        char celulaAfetada = mapa[l][c];
+        if (celulaAfetada == PAREDE_DESTRUTIVEL || celulaAfetada == CAIXA_COM_CHAVE || celulaAfetada == CAIXA_SEM_CHAVE) {
+            mapa[l][c] = VAZIO;
+            *pontos += 10;
+            return true; // Destrói a parede e para a explosão
         }
 
-        if (inimigoAtingido) {
-            lista_inimigos[i].ativo = false; // "Mata" o inimigo, tornando-o inativo
-            *pontos += 20; // Adiciona 20 pontos, conforme especificação do trabalho [cite: 159]
-            TraceLog(LOG_INFO, "Inimigo %d foi atingido pela explosao!", i);
+        if (celulaAfetada == PAREDE_INDESTRUTIVEL) {
+            return true; // Apenas para a explosão
+        }
+
+        return false; // Explosão continua
+    }
+
+    // Processa a própria célula da bomba primeiro
+    processaCelula(bombPos.linha, bombPos.coluna);
+
+    // Expande a explosão em 4 direções
+    for (int dir = 0; dir < 4; dir++) {
+        for (int i = 1; i <= CELULAS_ALCANCE_EXPLOSAO; i++) {
+            int l = bombPos.linha;
+            int c = bombPos.coluna;
+
+            if (dir == 0) c += i; // Direita
+            if (dir == 1) c -= i; // Esquerda
+            if (dir == 2) l += i; // Baixo
+            if (dir == 3) l -= i; // Cima
+
+            if (processaCelula(l, c)) {
+                break; // Se processaCelula retornou true, a explosão para nesta direção
+            }
         }
     }
 }
