@@ -19,6 +19,7 @@ int bombasAtivas = 0;
 int bombasDisponiveis;
 int vidasJogador;
 int pontuacaoJogador;
+int chavesColetadas;
 
 // <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
@@ -52,7 +53,7 @@ int main() {
             switch (selecaoMenu) {
                 case NOVO_JOGO:
                     iniciarNovoJogo(&mapa, &playerGridPosicao, &playerPosition,
-                                    &bombasDisponiveis, &vidasJogador, &pontuacaoJogador,
+                                    &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas,
                                     cellSize);
                     bombasAtivas = 0;
                     liberarInimigos(&inimigos, &numInimigos); // <--- Garante que inimigos antigos são liberados
@@ -63,7 +64,7 @@ int main() {
                     if (mapa == NULL) {
                         TraceLog(LOG_WARNING, "Nenhum jogo em andamento. Iniciando um Novo Jogo.");
                         iniciarNovoJogo(&mapa, &playerGridPosicao, &playerPosition,
-                                        &bombasDisponiveis, &vidasJogador, &pontuacaoJogador,
+                                        &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas,
                                         cellSize);
                         bombasAtivas = 0;
                         // inimigos seriam carregados aqui se fosse um fallback, mas a lógica de um "continue"

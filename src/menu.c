@@ -49,7 +49,7 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
 
 // Função para iniciar um novo jogo
 void iniciarNovoJogo(char*** mapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition,
-                    int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador,
+                    int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas,
                     int cellSize) {
     // Libera o mapa existente se houver
     if (*mapa != NULL) {
@@ -79,6 +79,7 @@ void iniciarNovoJogo(char*** mapa, PosicaoMapa* playerGridPosicao, Vector2* play
     *bombasDisponiveis = 3;
     *vidasJogador = 3;
     *pontuacaoJogador = 0;
+    *chavesColetadas = 0;
 
     TraceLog(LOG_INFO, "Novo Jogo Iniciado!");
 }
