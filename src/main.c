@@ -2,7 +2,7 @@
 #include "gameMap.h"
 #include "bomba.h"
 #include "menu.h"
-#include "inimigo.h" 
+#include "inimigo.h"
 #include <stdio.h>
 #include <stdlib.h> // Para exit, se usado em funções auxiliares
 
@@ -113,7 +113,7 @@ int main() {
             }
 
             for (int i = 0; i < bombasAtivas; ) {
-                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis)) {
+                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis, inimigos, numInimigos)) {
                     bombas[i] = bombas[bombasAtivas - 1];
                     bombasAtivas--;
                 } else {
