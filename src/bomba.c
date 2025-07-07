@@ -89,14 +89,8 @@ void Desenha_fogo_bomba(double deltaTime, char** mapa) {
     }
 }
 
-
-// Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
-void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos) {
-    bool jogadorAtingido = false;
-
-    // Função interna para processar cada célula afetada pela explosão
-    // Retorna true se a explosão deve parar, false se deve continuar
-    bool processaCelula(int l, int c){
+bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos,int l, int c){
+        bool jogadorAtingido = false;
         // Verifica se a célula está fora do mapa
         if (l < 0 || l >= LINHAS || c < 0 || c >= COLUNAS) {
             return true; // Para a explosão
@@ -135,8 +129,13 @@ void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, Posicao
         return false; // Explosão continua
     }
 
+
+// Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
+void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos) {
+    bool jogadorAtingido = false;
+
     // Processa a própria célula da bomba primeiro
-    processaCelula(bombPos.linha, bombPos.coluna);
+    processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, bombPos.linha,bombPos.coluna);
 
     // Expande a explosão em 4 direções
     for (int dir = 0; dir < 4; dir++) {
@@ -149,7 +148,7 @@ void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, Posicao
             if (dir == 2) l += i; // Baixo
             if (dir == 3) l -= i; // Cima
 
-            if (processaCelula(l, c)) {
+            if (processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, l,  c)) {
                 break; // Se processaCelula retornou true, a explosão para nesta direção
             }
         }

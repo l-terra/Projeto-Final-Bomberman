@@ -46,4 +46,6 @@ void desenha_rastro(PosicaoMapa posicaoBomba, char** mapa);
 // desenha o fogo da bomba na main
 void Desenha_fogo_bomba(double deltaTime,char **mapa);
 
-bool processaCelula(int l, int c);
+
+bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos,int l, int c);
+
