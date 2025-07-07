@@ -215,23 +215,23 @@ int main() {
 
             EndDrawing();
         } else if (estadoAtualDoJogo == ESTADO_VITORIA) {
-            if (IsKeyPressed(KEY_ENTER)) {
+            if (IsKeyPressed(KEY_P)) {
                 nivelAtual++;
                 chavesColetadas = 0;
 
                 liberarMapa(mapa);
+                liberarInimigos(&inimigos, &numInimigos);
 
                 sprintf(nomeMapa, "mapa%d.txt", nivelAtual);
-                if (!carregarMapa(nomeMapa)) {
-                    CloseWindow();
-                    exit(1);
-                }
+                carregarMapa(nomeMapa);
+                carregarInimigos(mapa, &inimigos, &numInimigos);
+
                 estadoAtualDoJogo = ESTADO_JOGANDO;
             }
 
             BeginDrawing();
                 DrawText("NÍVEL CONCLUÍDO!", GetScreenWidth()/2 - MeasureText("NÍVEL CONCLUÍDO!", 50)/2, 250, 50, GOLD);
-                DrawText("Pressione [ENTER] para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione [ENTER] para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
+                DrawText("Pressione P para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione P para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
             EndDrawing();
         } else if (estadoAtualDoJogo == ESTADO_ZERADO) {
             if (IsKeyPressed(KEY_ENTER)) {
@@ -244,7 +244,7 @@ int main() {
                 ClearBackground(BLACK);
                 DrawText("PARABENS!", GetScreenWidth()/2 - MeasureText("PARABENS!", 60)/2, 250, 60, LIME);
                 DrawText("Voce zerou o jogo!", GetScreenWidth()/2 - MeasureText("Voce zerou o jogo!", 40)/2, 320, 40, GREEN);
-                DrawText("Pressione ENTER para voltar ao menu ou Q para sair.", GetScreenWidth()/2 - MeasureText("Pressione ESC para sair.", 20)/2, 450, 20, RAYWHITE);
+                DrawText("Pressione ENTER para voltar ao menu ou Q para sair.", GetScreenWidth()/2 - MeasureText("Pressione ENTER para voltar ao menu ou Q para sair.", 20)/2, 450, 20, RAYWHITE);
             EndDrawing();
         }
 
