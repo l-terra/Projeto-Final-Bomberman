@@ -49,7 +49,7 @@ char** carregarMapa(const char* nomeArquivo) {
             for (int j = 0; j < COLUNAS; j++) {
                 // Verifica se o índice 'j' está dentro do comprimento da linha lida
                 // e se o caractere não é uma nova linha ('\n').
-                if (j < strlen(linha) && linha[j] != '\n') {
+                if (j < (int)strlen(linha) && linha[j] != '\n') {
                     mapa[i][j] = linha[j]; // Copia o caractere para a matriz do mapa.
                 } else {
                     // Se a linha lida for mais curta que 'COLUNAS' ou se um '\n' for encontrado,
@@ -83,8 +83,8 @@ void liberarMapa(char** mapa) {
 void desenharMapa(char** mapa, int screenWidth, int screenHeight, int cellSize) {
     // A área visível do mapa deve ser de 25 linhas e 60 colunas
     // A janela do jogo tem 600 pixels de altura x 1200 pixels de largura
-    // Cada caractere representa um bloco de 20x20 pixels 
-    // A parte inferior da tela (100 pixels) é reservada para informações 
+    // Cada caractere representa um bloco de 20x20 pixels
+    // A parte inferior da tela (100 pixels) é reservada para informações
 
     int mapHeight = screenHeight - 100; // Reserva o espaco de 100px para o HUD
 
