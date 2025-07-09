@@ -119,7 +119,7 @@ int main() {
             chavesColetadas++;
             mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
-                        if (chavesColetadas == 1) {
+                        if (chavesColetadas == 5) {
                             char nomeNovoMapa[32];
                             sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
                             FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");

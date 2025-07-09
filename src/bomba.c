@@ -116,14 +116,14 @@ bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, P
 
         // 3. Interação com o Mapa (Paredes)
         char celulaAfetada = mapa[l][c];
-        if (celulaAfetada == PAREDE_DESTRUTIVEL || celulaAfetada == CAIXA_COM_CHAVE || celulaAfetada == CAIXA_SEM_CHAVE) {
-            mapa[l][c] = VAZIO;
+        if (celulaAfetada == CAIXA_COM_CHAVE) { 
+            mapa[l][c] = CHAVE;                
             *pontos += 10;
-            return true; // Destrói a parede e para a explosão
-        }
-
-        if (celulaAfetada == PAREDE_INDESTRUTIVEL) {
-            return true; // Apenas para a explosão
+            return true; // destrói a caixa e para a explosão
+        } else if (celulaAfetada == PAREDE_DESTRUTIVEL || celulaAfetada == CAIXA_SEM_CHAVE) { // Caso contrário, verifica se é outra parede destrutível
+            mapa[l][c] = VAZIO;                
+            *pontos += 10;
+            return true; // Igualmente, destrói a parede e para a explosão                       
         }
 
         return false; // Explosão continua
