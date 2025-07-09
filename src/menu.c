@@ -54,7 +54,7 @@ void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosica
     // Libera o mapa existente se houver
     if (*mapa != NULL) {
         liberarMapa(*mapa);
-        *mapa = NULL; // Importante: Garante que o ponteiro é NULL após liberar
+        *mapa = NULL; // Garante que o ponteiro é NULL após liberar
     }
 
     *nivelAtual = 1;

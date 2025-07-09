@@ -100,9 +100,6 @@ void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, P
     }
 }
 
-
-// --- As funções abaixo permanecem inalteradas ---
-
 void carregarInimigos(char** mapa, Inimigo** lista_inimigos, int* num_inimigos) {
     int contador = 0;
     for (int i = 0; i < LINHAS; i++) {

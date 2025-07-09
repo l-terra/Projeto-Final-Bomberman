@@ -19,7 +19,6 @@ typedef struct {
 
 //estrutura do tempo do rastro da bomba
 typedef struct {
-
     PosicaoMapa posicao;
     double tempoRestante;
 }RastroExplosao;

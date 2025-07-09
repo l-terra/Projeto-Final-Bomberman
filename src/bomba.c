@@ -3,7 +3,6 @@
 #include "gameMap.h"
 #include <stdio.h> // Para NULL
 #include <stdlib.h> // para abs()
- // teste
 
 // Função para inicializar uma nova bomba
 void iniciarBomba(Bomba* bomba, PosicaoMapa posicao, double tempoParaExplodir) {
@@ -30,10 +29,8 @@ void desenharBomba(const Bomba* bomba, int cellSize) {
     }
 }
 
-
 RastroExplosao rastros_ativos [MAX_RASTROS];
 int num_rastros_ativos = 0;
-
 
 //desenha o fogo da bomba
 void desenha_rastro(PosicaoMapa bombPos, char** mapa) {
