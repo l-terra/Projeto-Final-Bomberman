@@ -235,7 +235,16 @@ int main() {
                 liberarInimigos(&inimigos, &numInimigos);
 
                 sprintf(nomeMapa, "mapa%d.txt", nivelAtual);
-                carregarMapa(nomeMapa);
+                mapa = carregarMapa(nomeMapa);
+                if (mapa == NULL) {
+                    TraceLog(LOG_ERROR, "Falha ao carregar o proximo nivel: %s", nomeMapa);
+                    estadoAtualDoJogo = ESTADO_MENU; 
+                    continue;
+                }
+
+                playerGridPosicao = encontrarPosicaoInicialJogador(mapa);
+                playerPosition = (Vector2){(float)playerGridPosicao.coluna * cellSize, (float)playerGridPosicao.linha * cellSize};
+                
                 carregarInimigos(mapa, &inimigos, &numInimigos);
 
                 estadoAtualDoJogo = ESTADO_JOGANDO;
