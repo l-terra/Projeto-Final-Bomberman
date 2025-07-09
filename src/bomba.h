@@ -31,13 +31,13 @@ void desenharBomba(const Bomba* bomba, int cellSize);
 
 // Função para atualizar o estado da bomba (contagem regressiva, explosão)
 // Retorna true se a bomba explodiu, false caso contrário
-bool atualizarBomba(Bomba* bomba, double deltaTime, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer, int* bombasDisponiveis, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao);
+bool atualizarBomba(Bomba* bomba, double deltaTime, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer, int* bombasDisponiveis, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao, Sound somHit);
 // ponteiros para pontos e vidas para que a explosão possa afetá-los.
 // playerPos é para verificar se o jogador está no raio da explosão.
 // bombasDisponiveis para incrementar o estoque.
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
-void explosao(PosicaoMapa posicaoBomba, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao);
+void explosao(PosicaoMapa posicaoBomba, char** mapa, int* pontos, int* vidas, PosicaoMapa posicaoPlayer, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao, Sound somHit);
 
 // Função para desenhar o rastro da explosão
 void desenha_rastro(PosicaoMapa posicaoBomba, char** mapa);
@@ -46,5 +46,5 @@ void desenha_rastro(PosicaoMapa posicaoBomba, char** mapa);
 void Desenha_fogo_bomba(double deltaTime,char **mapa);
 
 
-bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos,int l, int c);
+bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos, int l, int c, Sound somHit);
 

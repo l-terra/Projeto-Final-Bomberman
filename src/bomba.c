@@ -86,7 +86,7 @@ void Desenha_fogo_bomba(double deltaTime, char** mapa) {
     }
 }
 
-bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos,int l, int c){
+bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos, int l, int c, Sound somHit){
         bool jogadorAtingido = false;
         // Verifica se a célula está fora do mapa
         if (l < 0 || l >= LINHAS || c < 0 || c >= COLUNAS) {
@@ -98,6 +98,7 @@ bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, P
             *vidas -= 1;
             *pontos -= 100;
             if (*pontos < 0) *pontos = 0;
+            PlaySound(somHit);
             TraceLog(LOG_INFO, "Jogador atingido pela explosao! Vidas: %d", *vidas);
             jogadorAtingido = true; // Evita dano múltiplo pela mesma bomba
         }
@@ -128,11 +129,11 @@ bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, P
 
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
-void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao) {
+void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao, Sound somHit) {
     PlaySound(somExplosao);
 
     // Processa a própria célula da bomba primeiro
-    processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, bombPos.linha,bombPos.coluna);
+    processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, bombPos.linha,bombPos.coluna, somHit);
 
     // Expande a explosão em 4 direções
     for (int dir = 0; dir < 4; dir++) {
@@ -145,7 +146,7 @@ void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, Posicao
             if (dir == 2) l += i; // Baixo
             if (dir == 3) l -= i; // Cima
 
-            if (processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, l,  c)) {
+            if (processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, l,  c, somHit)) {
                 break; // Se processaCelula retornou true, a explosão para nesta direção
             }
         }
@@ -154,7 +155,7 @@ void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, Posicao
 
 // Função para atualizar o estado da bomba (contagem regressiva, explosão)
 // Retorna true se a bomba explodiu e deve ser removida, false caso contrário
-bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, int* bombasDisponiveis, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao) {
+bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, int* bombasDisponiveis, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao, Sound somHit) {
     if (bomb == NULL || !bomb->ativa) {
         return false;
     }
@@ -163,7 +164,7 @@ bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int
 
     if (bomb->tempoParaExplodir <= 0) {
         // MODIFICADO: Passe a lista de inimigos para a função de explosão
-        explosao(bomb->posicao, mapa, pontos, vidas, playerPos, lista_inimigos, num_inimigos, somExplosao);
+        explosao(bomb->posicao, mapa, pontos, vidas, playerPos, lista_inimigos, num_inimigos, somExplosao, somHit);
 
         // Adiciona um novo rastro à lista de rastros ativos
         if (num_rastros_ativos < MAX_RASTROS) {

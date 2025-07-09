@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <math.h> // Para abs()
 
-#define INTERVALO_MOVIMENTO_INIMIGO 0.5 // Velocidade de movimentação
+#define INTERVALO_MOVIMENTO_INIMIGO 0.9 // Velocidade de movimentação
 
 // Função auxiliar para verificar se uma posição é válida para se mover
 static bool podeMoverPara(PosicaoMapa pos, char** mapa, const Inimigo* todosInimigos, int numInimigos, int inimigoAtualId) {
@@ -27,7 +27,7 @@ static bool podeMoverPara(PosicaoMapa pos, char** mapa, const Inimigo* todosInim
 }
 
 
-void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, PosicaoMapa playerPos, int* vidas, int* pontuacao, double deltaTime) {
+void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, PosicaoMapa playerPos, int* vidas, int* pontuacao, double deltaTime, Sound hitSom) {
     static double tempoAcumulado = 0;
     tempoAcumulado += deltaTime;
 
@@ -96,6 +96,7 @@ void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, P
             (*vidas)--;
             (*pontuacao) -= 100;
             if (*pontuacao < 0) *pontuacao = 0;
+            PlaySound(hitSom);
         }
     }
 }

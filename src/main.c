@@ -22,7 +22,8 @@ int pontuacaoJogador;
 int chavesColetadas;
 int nivelAtual;
 char nomeMapa[32];
-Sound somExplosao; // Variável para o som da explosão
+Sound somExplosao;
+Sound somHit;
 
 // <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
@@ -49,9 +50,13 @@ int main() {
 
     InitAudioDevice(); // Inicializa o dispositivo de áudio
 
-    // Carrega o som da explosão
+    // Carrega o sons
     somExplosao = LoadSound("assets/explosion.mp3"); 
-    SetSoundVolume(somExplosao, 0.1f); // Define o volume da explosão para 50%
+    somHit = LoadSound("assets/hit.mp3");
+
+    // Ajusta o volume dos sons
+    SetSoundVolume(somExplosao, 0.1f);
+    SetSoundVolume(somHit, 2.0f);
 
     char** mapa = NULL;
 
@@ -150,7 +155,7 @@ int main() {
             }
 
             for (int i = 0; i < bombasAtivas; ) {
-                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis, inimigos, numInimigos, somExplosao)) {
+                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis, inimigos, numInimigos, somExplosao, somHit)) {
                     bombas[i] = bombas[bombasAtivas - 1];
                     bombasAtivas--;
                 } else {
@@ -162,7 +167,7 @@ int main() {
                 pontuacaoJogador = 0;
             }
 
-            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime()); // <--- Atualiza inimigos
+            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit); // <--- Atualiza inimigos
 
             BeginDrawing();
                 ClearBackground(WHITE);
