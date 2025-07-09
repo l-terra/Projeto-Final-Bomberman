@@ -93,19 +93,31 @@ int main() {
             if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) nextPlayerGridY -= 1;
             if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) nextPlayerGridY += 1;
 
-            if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS &&
-                nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
-                char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
-                if (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE) {
-                    playerGridPosicao.coluna = nextPlayerGridX;
-                    playerGridPosicao.linha = nextPlayerGridY;
+            if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
 
-                    playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
-                    playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+    // --- INÍCIO DA MODIFICAÇÃO ---
+    // Verifica se a célula de destino está ocupada por uma bomba
+    bool obstaculoBomba = false;
+    for (int i = 0; i < bombasAtivas; i++) {
+        if (bombas[i].ativa && bombas[i].posicao.linha == nextPlayerGridY && bombas[i].posicao.coluna == nextPlayerGridX) {
+            obstaculoBomba = true;
+            break;
+        }
+    }
 
-                    if (celulaAlvo == CHAVE) {
-                        chavesColetadas++;
-                        celulaAlvo = VAZIO;
+    char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
+    // Adiciona a condição !obstaculoBomba
+    if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
+    // --- FIM DA MODIFICAÇÃO ---
+        playerGridPosicao.coluna = nextPlayerGridX;
+        playerGridPosicao.linha = nextPlayerGridY;
+
+        playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
+        playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+
+        if (celulaAlvo == CHAVE) {
+            chavesColetadas++;
+            mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
                         if (chavesColetadas == 1) {
                             char nomeNovoMapa[32];
