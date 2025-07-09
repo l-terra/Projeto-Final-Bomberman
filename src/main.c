@@ -22,6 +22,7 @@ int pontuacaoJogador;
 int chavesColetadas;
 int nivelAtual;
 char nomeMapa[32];
+Sound somExplosao; // Variável para o som da explosão
 
 // <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
@@ -45,6 +46,12 @@ void addBomb(PosicaoMapa posicao, double tempoParaExplodir) {
 int main() {
     InitWindow(screenWidth, screenHeight, "Bomberman");
     SetTargetFPS(60);
+
+    InitAudioDevice(); // Inicializa o dispositivo de áudio
+
+    // Carrega o som da explosão
+    somExplosao = LoadSound("assets/explosion.mp3"); 
+    SetSoundVolume(somExplosao, 0.1f); // Define o volume da explosão para 50%
 
     char** mapa = NULL;
 
@@ -143,7 +150,7 @@ int main() {
             }
 
             for (int i = 0; i < bombasAtivas; ) {
-                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis, inimigos, numInimigos)) {
+                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis, inimigos, numInimigos, somExplosao)) {
                     bombas[i] = bombas[bombasAtivas - 1];
                     bombasAtivas--;
                 } else {
@@ -295,6 +302,10 @@ int main() {
         liberarMapa(mapa);
     }
     liberarInimigos(&inimigos, &numInimigos); // <--- Libera os inimigos ao sair do jogo
+
+    UnloadSound(somExplosao); // Descarrega o som
+    CloseAudioDevice(); // Fecha o dispositivo de áudio
+
     CloseWindow();
     return 0;
 } //game over corrigido

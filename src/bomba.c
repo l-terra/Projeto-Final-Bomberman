@@ -128,7 +128,8 @@ bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, P
 
 
 // Função para lidar com a lógica da explosão (destruição de elementos, dano ao jogador)
-void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos) {
+void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao) {
+    PlaySound(somExplosao);
 
     // Processa a própria célula da bomba primeiro
     processaCelula (bombPos ,  mapa,  pontos, vidas,  playerPos,  lista_inimigos,  num_inimigos, bombPos.linha,bombPos.coluna);
@@ -153,7 +154,7 @@ void explosao(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, Posicao
 
 // Função para atualizar o estado da bomba (contagem regressiva, explosão)
 // Retorna true se a bomba explodiu e deve ser removida, false caso contrário
-bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, int* bombasDisponiveis, Inimigo* lista_inimigos, int num_inimigos) {
+bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, int* bombasDisponiveis, Inimigo* lista_inimigos, int num_inimigos, Sound somExplosao) {
     if (bomb == NULL || !bomb->ativa) {
         return false;
     }
@@ -162,7 +163,7 @@ bool atualizarBomba(Bomba* bomb, double deltaTime, char** mapa, int* pontos, int
 
     if (bomb->tempoParaExplodir <= 0) {
         // MODIFICADO: Passe a lista de inimigos para a função de explosão
-        explosao(bomb->posicao, mapa, pontos, vidas, playerPos, lista_inimigos, num_inimigos);
+        explosao(bomb->posicao, mapa, pontos, vidas, playerPos, lista_inimigos, num_inimigos, somExplosao);
 
         // Adiciona um novo rastro à lista de rastros ativos
         if (num_rastros_ativos < MAX_RASTROS) {
