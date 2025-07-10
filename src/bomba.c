@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "inimigo.h"
 #include "bomba.h"
 #include "gameMap.h"
 #include <stdio.h> // Para NULL
