@@ -184,7 +184,7 @@ int main() {
             gameState.mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
             // Lógica para verificar se o nível foi concluído
-            if (gameState.chavesColetadas == 1) { // Supondo que só há 1 chave por nível
+            if (gameState.chavesColetadas == 5) { // Supondo que só há 1 chave por nível
                 char nomeNovoMapa[32];
                 sprintf(nomeNovoMapa, "mapa%d.txt", gameState.nivelAtual + 1);
                 FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
