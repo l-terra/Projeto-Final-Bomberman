@@ -38,6 +38,15 @@ PosicaoMapa playerGridPosicao;
 Vector2 playerPosition;
 EstadoJogo estadoAtualDoJogo = ESTADO_MENU;
 
+typedef enum {
+    DIR_DIREITA,
+    DIR_ESQUERDA,
+    DIR_CIMA,
+    DIR_BAIXO
+} DirecaoJogador;
+
+// Variável para armazenar a última direção do jogador. Começa virado para baixo.
+DirecaoJogador direcaoAtualJogador = DIR_BAIXO;
 
 void addBomb(PosicaoMapa posicao, double tempoParaExplodir) {
 
@@ -52,7 +61,7 @@ TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.colu
 TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
 }
 
-} 
+}
 
 int main() {
     InitWindow(screenWidth, screenHeight, "Bomberman");
@@ -63,7 +72,7 @@ int main() {
     // Carrega o sons
     somPassarFase = LoadSound("assets/passarfase.mp3");
     somChave = LoadSound("assets/keys.mp3");
-    somExplosao = LoadSound("assets/explosion.mp3"); 
+    somExplosao = LoadSound("assets/explosion.mp3");
     somHit = LoadSound("assets/hit.mp3");
     musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
     somMenu = LoadSound("assets/Menu.wav");
@@ -113,7 +122,7 @@ int main() {
                         bombasAtivas = estadoCarregado.bombasAtivas;
 
                         // Recria o mapa a partir dos dados salvos
-                        mapa = alocarMapa(); 
+                        mapa = alocarMapa();
                         for (int i = 0; i < LINHAS; i++) {
                             for (int j = 0; j < COLUNAS; j++) {
                                 mapa[i][j] = estadoCarregado.mapa[i][j];
@@ -131,7 +140,7 @@ int main() {
                     else{
                         TraceLog(LOG_INFO, "Nenhum jogo salvo encontrado");
                     }
-                    break;      
+                    break;
                 }
                 case SAIR_DO_JOGO:
                     estadoAtualDoJogo = ESTADO_SAIR;
@@ -155,7 +164,7 @@ int main() {
                                 estadoAtualParaSalvar.mapa[i][j] = mapa[i][j];
                             }
                         }
-                        
+
                         memcpy(estadoAtualParaSalvar.inimigos, inimigos, sizeof(Inimigo) * numInimigos);
                         estadoAtualParaSalvar.numInimigos = numInimigos;
 
@@ -168,17 +177,16 @@ int main() {
                 case VOLTAR_AO_JOGO: // Este é o novo caso que não deve afetar o salvar
                     // Se o jogo estava em andamento (mapa não NULL), retorna a ele.
                     // Caso contrário, pode ser um estado inicial sem jogo.
-                    if (mapa != NULL) { 
-                        estadoAtualDoJogo = ESTADO_JOGANDO; 
+                    if (mapa != NULL) {
+                        estadoAtualDoJogo = ESTADO_JOGANDO;
                     } else {
                         // Se não há um jogo em andamento, permanecer no menu pode ser mais lógico.
                         // Ou mudar para ESTADO_MENU explicitamente, embora já esteja lá.
                         TraceLog(LOG_WARNING, "Nenhum jogo em andamento para voltar. Permanecendo no menu.");
-                        estadoAtualDoJogo = ESTADO_MENU; 
+                        estadoAtualDoJogo = ESTADO_MENU;
                     }
                 break;
-            } 
-            
+            }
         }
         else if (estadoAtualDoJogo == ESTADO_JOGANDO) {
             if (IsKeyPressed(KEY_TAB)) {
@@ -190,11 +198,23 @@ int main() {
             int nextPlayerGridX = playerGridPosicao.coluna;
             int nextPlayerGridY = playerGridPosicao.linha;
 
-            if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) nextPlayerGridX += 1;
-            if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) nextPlayerGridX -= 1;
-            if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) nextPlayerGridY -= 1;
-            if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) nextPlayerGridY += 1;
 
+            if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) {
+                nextPlayerGridX += 1;
+                direcaoAtualJogador = DIR_DIREITA;
+            }
+            else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) {
+                nextPlayerGridX -= 1;
+                direcaoAtualJogador = DIR_ESQUERDA;
+            }
+            else if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
+                nextPlayerGridY -= 1;
+                direcaoAtualJogador = DIR_CIMA;
+            }
+            else if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
+                nextPlayerGridY += 1;
+                direcaoAtualJogador = DIR_BAIXO;
+            }
             // ... dentro do loop do ESTADO_JOGANDO
 
             if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
@@ -207,7 +227,7 @@ int main() {
     }
 
     char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
-    
+
     // Apenas UMA verificação, combinando toda a lógica
     if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
         playerGridPosicao.coluna = nextPlayerGridX;
@@ -232,14 +252,29 @@ int main() {
                     fclose(arquivoNovoMapa);
                     estadoAtualDoJogo = ESTADO_VITORIA;
                             }
-                        } 
+                        }
                     }
                 }
             }
 
             if (IsKeyPressed(KEY_B) && bombasDisponiveis > 0) {
+                // Começa com a posição atual do jogador como base
                 PosicaoMapa posicaoBomba = playerGridPosicao;
-                if (mapa[posicaoBomba.linha][posicaoBomba.coluna] == VAZIO) {
+
+                // Ajusta a posição da bomba com base na direção do jogador
+                switch (direcaoAtualJogador) {
+                    case DIR_DIREITA:   posicaoBomba.coluna++; break;
+                    case DIR_ESQUERDA:  posicaoBomba.coluna--; break;
+                    case DIR_CIMA:      posicaoBomba.linha--;  break;
+                    case DIR_BAIXO:     posicaoBomba.linha++;  break;
+                }
+
+                // Verifica se a posição calculada está dentro dos limites do mapa
+                // e se o espaço está vazio para colocar a bomba.
+                if (posicaoBomba.coluna >= 0 && posicaoBomba.coluna < COLUNAS &&
+                    posicaoBomba.linha >= 0 && posicaoBomba.linha < LINHAS &&
+                    mapa[posicaoBomba.linha][posicaoBomba.coluna] == VAZIO)
+                {
                     addBomb(posicaoBomba, TEMPO_EXPLOSAO);
                     bombasDisponiveis--;
                 }
@@ -257,7 +292,7 @@ int main() {
             if (pontuacaoJogador < 0) {
                 pontuacaoJogador = 0;
             }
-            
+
             // Alteração aqui: Passando as bombas para a função de atualização dos inimigos
             atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit, bombas, bombasAtivas);
 
@@ -364,7 +399,7 @@ int main() {
                 StopMusicStream(musicaVitoria);
                 estadoAtualDoJogo = ESTADO_SAIR;
             }
-            
+
             BeginDrawing();
                 ClearBackground(BLACK);
                 DrawText("PARABENS!", GetScreenWidth()/2 - MeasureText("PARABENS!", 60)/2, 250, 60, LIME);

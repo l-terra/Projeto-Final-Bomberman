@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "bomba.h"
 #include "gameMap.h"
+#include "inimigo.h"
 #include <stdio.h> // Para NULL
 #include <stdlib.h> // para abs()
 
@@ -114,14 +115,14 @@ bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, P
 
         // 3. Interação com o Mapa (Paredes)
         char celulaAfetada = mapa[l][c];
-        if (celulaAfetada == CAIXA_COM_CHAVE) { 
-            mapa[l][c] = CHAVE;                
+        if (celulaAfetada == CAIXA_COM_CHAVE) {
+            mapa[l][c] = CHAVE;
             *pontos += 10;
             return true; // destrói a caixa e para a explosão
         } else if (celulaAfetada == PAREDE_DESTRUTIVEL || celulaAfetada == CAIXA_SEM_CHAVE) { // Caso contrário, verifica se é outra parede destrutível
-            mapa[l][c] = VAZIO;                
+            mapa[l][c] = VAZIO;
             *pontos += 10;
-            return true; // Igualmente, destrói a parede e para a explosão                       
+            return true; // Igualmente, destrói a parede e para a explosão
         }
 
         return false; // Explosão continua
