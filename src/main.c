@@ -179,46 +179,42 @@ int main() {
             if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) nextPlayerGridY -= 1;
             if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) nextPlayerGridY += 1;
 
-            if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
-                bool obstaculoBomba = false;
-                for (int i = 0; i < bombasAtivas; i++) {
-                    if (bombas[i].ativa && bombas[i].posicao.linha == nextPlayerGridY && bombas[i].posicao.coluna == nextPlayerGridX) {
-                        obstaculoBomba = true;
-                        break;
-                    }
-                }
+            // ... dentro do loop do ESTADO_JOGANDO
 
-                char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
-                if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
-                    playerGridPosicao.coluna = nextPlayerGridX;
-                    playerGridPosicao.linha = nextPlayerGridY;
-                    playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
-                    playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+            if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
+    bool obstaculoBomba = false;
+    for (int i = 0; i < bombasAtivas; i++) {
+        if (bombas[i].ativa && bombas[i].posicao.linha == nextPlayerGridY && bombas[i].posicao.coluna == nextPlayerGridX) {
+            obstaculoBomba = true;
+            break;
+        }
+    }
 
     char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
-    // Adiciona a condição !obstaculoBomba
+    
+    // Apenas UMA verificação, combinando toda a lógica
     if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
-    // --- FIM DA MODIFICAÇÃO ---
         playerGridPosicao.coluna = nextPlayerGridX;
         playerGridPosicao.linha = nextPlayerGridY;
-
         playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
         playerPosition.y = (float)playerGridPosicao.linha * cellSize;
 
+        // Se a célula era a chave, coleta-a
         if (celulaAlvo == CHAVE) {
             chavesColetadas++;
             PlaySound(somChave);
             mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
-                        if (chavesColetadas == 1) {
-                            char nomeNovoMapa[32];
-                            sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
-                            FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
-                            if (arquivoNovoMapa == NULL) {
-                                estadoAtualDoJogo = ESTADO_ZERADO;
-                            } else {
-                                fclose(arquivoNovoMapa);
-                                estadoAtualDoJogo = ESTADO_VITORIA;
+            // Lógica para verificar se o nível foi concluído
+            if (chavesColetadas == 1) { // Supondo que só há 1 chave por nível
+                char nomeNovoMapa[32];
+                sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
+                FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
+                if (arquivoNovoMapa == NULL) {
+                    estadoAtualDoJogo = ESTADO_ZERADO;
+                } else {
+                    fclose(arquivoNovoMapa);
+                    estadoAtualDoJogo = ESTADO_VITORIA;
                             }
                         } 
                     }
