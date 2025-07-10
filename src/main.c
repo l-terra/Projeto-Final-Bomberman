@@ -49,18 +49,13 @@ typedef enum {
 DirecaoJogador direcaoAtualJogador = DIR_BAIXO;
 
 void addBomb(PosicaoMapa posicao, double tempoParaExplodir) {
-
-if (bombasAtivas < MAX_BOMBAS) {
-
-iniciarBomba(&bombas[bombasAtivas], posicao, tempoParaExplodir);
-
-bombasAtivas++;
-TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, bombasAtivas);
-
-} else {
-TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
-}
-
+    if (bombasAtivas < MAX_BOMBAS) {
+        iniciarBomba(&bombas[bombasAtivas], posicao, tempoParaExplodir);
+        bombasAtivas++;
+        TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, bombasAtivas);
+    } else {
+        TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
+    }
 }
 
 int main() {
