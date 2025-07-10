@@ -24,6 +24,7 @@ int nivelAtual;
 char nomeMapa[32];
 Sound somExplosao;
 Sound somHit;
+Music musicaVitoria;
 
 // <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
@@ -53,10 +54,12 @@ int main() {
     // Carrega o sons
     somExplosao = LoadSound("assets/explosion.mp3"); 
     somHit = LoadSound("assets/hit.mp3");
+    musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
 
     // Ajusta o volume dos sons
     SetSoundVolume(somExplosao, 0.1f);
-    SetSoundVolume(somHit, 2.0f);
+    SetSoundVolume(somHit, 1.0f);
+    SetMusicVolume(musicaVitoria, 0.3f);
 
     char** mapa = NULL;
 
@@ -131,7 +134,7 @@ int main() {
             chavesColetadas++;
             mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
-                        if (chavesColetadas == 5) {
+                        if (chavesColetadas == 1) {
                             char nomeNovoMapa[32];
                             sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
                             FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
@@ -267,9 +270,17 @@ int main() {
                 DrawText("Pressione P para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione P para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
             EndDrawing();
         } else if (estadoAtualDoJogo == ESTADO_ZERADO) {
+            // Verifica se a música já está tocando para evitar reiniciar
+            if (!IsMusicStreamPlaying(musicaVitoria)) {
+                PlayMusicStream(musicaVitoria);
+            }
+            UpdateMusicStream(musicaVitoria); // Atualiza o stream da música
+
             if (IsKeyPressed(KEY_ENTER)) {
+                StopMusicStream(musicaVitoria);
                 estadoAtualDoJogo = ESTADO_MENU;
             } else if (IsKeyPressed (KEY_Q)) {
+                StopMusicStream(musicaVitoria);
                 estadoAtualDoJogo = ESTADO_SAIR;
             }
             
@@ -308,7 +319,9 @@ int main() {
     }
     liberarInimigos(&inimigos, &numInimigos); // <--- Libera os inimigos ao sair do jogo
 
-    UnloadSound(somExplosao); // Descarrega o som
+    UnloadSound(somExplosao);
+    UnloadSound(somHit);
+    UnloadMusicStream(musicaVitoria);
     CloseAudioDevice(); // Fecha o dispositivo de áudio
 
     CloseWindow();
