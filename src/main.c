@@ -66,7 +66,7 @@ int main() {
     somExplosao = LoadSound("assets/explosion.mp3"); 
     somHit = LoadSound("assets/hit.mp3");
     musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
-    somMenu = LoadSound("assets/menu.wav");
+    somMenu = LoadSound("assets/Menu.wav");
 
     // Ajusta o volume dos sons
     SetSoundVolume(somExplosao, 0.1f);

@@ -2,11 +2,13 @@
 #include <stdio.h>   // Para printf
 #include <stdlib.h>  // Para exit
 
+Sound somSelecao;
 OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
     OpcaoMenu selecao = NOVO_JOGO;
     bool menuAberto = true;
 
     while (menuAberto) {
+        somSelecao = LoadSound("assets/selecao.wav");
         BeginDrawing();
             ClearBackground(RAYWHITE);
 
@@ -32,18 +34,22 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
             menuAberto = false;
         }
         if (IsKeyPressed(KEY_N)) {
+            PlaySound(somSelecao);
             selecao = NOVO_JOGO;
             menuAberto = false;
         }
         if (IsKeyPressed(KEY_C)) {
+            PlaySound(somSelecao);
             selecao = CONTINUAR_JOGO;
             menuAberto = false;
         }
         if (IsKeyPressed(KEY_Q)) {
+            PlaySound(somSelecao);
             selecao = SAIR_DO_JOGO;
             menuAberto = false;
         }
         if (IsKeyPressed(KEY_P)) {
+            PlaySound(somSelecao);
             selecao = SALVAR_JOGO;
             menuAberto = false;
         }
@@ -55,6 +61,7 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
 void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition,
                     int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas, int* nivelAtual,
                     int cellSize) {
+    PlaySound(somSelecao);
     // Libera o mapa existente se houver
     if (*mapa != NULL) {
         liberarMapa(*mapa);
@@ -86,6 +93,6 @@ void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosica
     *vidasJogador = 3;
     *pontuacaoJogador = 0;
     *chavesColetadas = 0;
-
+    UnloadSound(somSelecao);
     TraceLog(LOG_INFO, "Novo Jogo Iniciado!");
 }
