@@ -24,6 +24,11 @@ int nivelAtual;
 char nomeMapa[32];
 Sound somExplosao;
 Sound somHit;
+Sound somChave;
+Sound somPassarFase;
+Music musicaVitoria;
+
+bool somPassarFaseTocado = false;
 
 Inimigo* inimigos = NULL;
 int numInimigos = 0;
@@ -54,10 +59,17 @@ int main() {
 
     InitAudioDevice();
 
-    somExplosao = LoadSound("assets/explosion.mp3");
+    // Carrega o sons
+    somPassarFase = LoadSound("assets/passarfase.mp3");
+    somChave = LoadSound("assets/keys.mp3");
+    somExplosao = LoadSound("assets/explosion.mp3"); 
     somHit = LoadSound("assets/hit.mp3");
+    musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
+
+    // Ajusta o volume dos sons
     SetSoundVolume(somExplosao, 0.1f);
-    SetSoundVolume(somHit, 2.0f);
+    SetSoundVolume(somHit, 1.0f);
+    SetMusicVolume(musicaVitoria, 0.3f);
 
     char** mapa = NULL;
 
@@ -183,11 +195,22 @@ int main() {
                     playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
                     playerPosition.y = (float)playerGridPosicao.linha * cellSize;
 
-                    if (celulaAlvo == CHAVE) {
-                        chavesColetadas++;
-                        mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
+    char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
+    // Adiciona a condição !obstaculoBomba
+    if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
+    // --- FIM DA MODIFICAÇÃO ---
+        playerGridPosicao.coluna = nextPlayerGridX;
+        playerGridPosicao.linha = nextPlayerGridY;
 
-                        if (chavesColetadas == 5) {
+        playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
+        playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+
+        if (celulaAlvo == CHAVE) {
+            chavesColetadas++;
+            PlaySound(somChave);
+            mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
+
+                        if (chavesColetadas == 1) {
                             char nomeNovoMapa[32];
                             sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
                             FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
@@ -279,9 +302,17 @@ int main() {
                          screenWidth / 2 - MeasureText("Pressione Q para Sair do Jogo", 20) / 2,
                          screenHeight / 2 + 120, 20, GRAY);
             EndDrawing();
-        }
-        else if (estadoAtualDoJogo == ESTADO_VITORIA) {
+        } else if (estadoAtualDoJogo == ESTADO_VITORIA) {
+            if (!somPassarFaseTocado) { //
+                PlaySound(somPassarFase); //
+                somPassarFaseTocado = true; //
+            }
+
             if (IsKeyPressed(KEY_P)) {
+                if (IsSoundPlaying(somPassarFase)) {
+                    StopSound(somPassarFase);
+                }
+
                 nivelAtual++;
                 chavesColetadas = 0;
 
@@ -306,11 +337,18 @@ int main() {
                 DrawText("NÍVEL CONCLUÍDO!", GetScreenWidth()/2 - MeasureText("NÍVEL CONCLUÍDO!", 50)/2, 250, 50, GOLD);
                 DrawText("Pressione P para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione P para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
             EndDrawing();
-        }
-        else if (estadoAtualDoJogo == ESTADO_ZERADO) {
+        } else if (estadoAtualDoJogo == ESTADO_ZERADO) {
+            // Verifica se a música já está tocando para evitar reiniciar
+            if (!IsMusicStreamPlaying(musicaVitoria)) {
+                PlayMusicStream(musicaVitoria);
+            }
+            UpdateMusicStream(musicaVitoria); // Atualiza o stream da música
+
             if (IsKeyPressed(KEY_ENTER)) {
+                StopMusicStream(musicaVitoria);
                 estadoAtualDoJogo = ESTADO_MENU;
             } else if (IsKeyPressed (KEY_Q)) {
+                StopMusicStream(musicaVitoria);
                 estadoAtualDoJogo = ESTADO_SAIR;
             }
             
@@ -330,9 +368,11 @@ int main() {
     }
     liberarInimigos(&inimigos, &numInimigos);
 
+    UnloadSound(somChave);
     UnloadSound(somExplosao);
     UnloadSound(somHit);
-    CloseAudioDevice();
+    UnloadMusicStream(musicaVitoria);
+    CloseAudioDevice(); // Fecha o dispositivo de áudio
 
     CloseWindow();
     return 0;
