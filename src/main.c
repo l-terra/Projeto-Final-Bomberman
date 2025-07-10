@@ -189,6 +189,7 @@ int main() {
             }
         }
         else if (estadoAtualDoJogo == ESTADO_JOGANDO) {
+            somPassarFaseTocado = false;
             if (IsKeyPressed(KEY_TAB)) {
                 PlaySound(somMenu);
                 estadoAtualDoJogo = ESTADO_MENU;
