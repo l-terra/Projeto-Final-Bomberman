@@ -29,7 +29,9 @@ typedef struct {
 
 // Função para carregar o mapa a partir de um arquivo de texto
 // Retorna um ponteiro para a matriz do mapa alocada dinamicamente
+char** alocarMapa(void); 
 char** carregarMapa(const char* nomeArquivo);
+
 
 // Função para liberar a memória alocada para o mapa
 void liberarMapa(char** gameMap);

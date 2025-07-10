@@ -15,11 +15,11 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
             Color corNovoJogo = (selecao == NOVO_JOGO) ? RED : BLACK;
             Color corContinuarJogo = (selecao == CONTINUAR_JOGO) ? RED : BLACK;
             Color corSairDoJogo = (selecao == SAIR_DO_JOGO) ? RED : BLACK;
-
+            Color corSalvarJogo = (selecao == SALVAR_JOGO) ? RED : BLACK;
             DrawText("Novo Jogo (N)", screenWidth / 2 - MeasureText("Novo Jogo (N)", 30) / 2, screenHeight / 2, 30, corNovoJogo);
             DrawText("Continuar Jogo (C)", screenWidth / 2 - MeasureText("Continuar Jogo (C)", 30) / 2, screenHeight / 2 + 40, 30, corContinuarJogo);
             DrawText("Sair do Jogo (Q)", screenWidth / 2 - MeasureText("Sair do Jogo (Q)", 30) / 2, screenHeight / 2 + 80, 30, corSairDoJogo);
-
+            DrawText("Salvar o jogo (p)", screenWidth / 2 - MeasureText("Salvar o Jogo (p)", 30) /2, screenHeight /2 + 120,30, corSalvarJogo);
         EndDrawing();
 
         if (IsKeyPressed(KEY_DOWN)) {
@@ -41,6 +41,10 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
         }
         if (IsKeyPressed(KEY_Q)) {
             selecao = SAIR_DO_JOGO;
+            menuAberto = false;
+        }
+        if (IsKeyPressed(KEY_P)) {
+            selecao = SALVAR_JOGO;
             menuAberto = false;
         }
     }

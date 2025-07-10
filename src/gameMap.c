@@ -3,69 +3,78 @@
 #include <stdlib.h>  // Para alocação dinâmica (malloc, free)
 #include <string.h>  // Para manipulação de strings (fgets)
 
-// Função para carregar o mapa a partir de um arquivo texto
-char** carregarMapa(const char* nomeArquivo) {
-    // Abertura do arquivo no modo de leitura
-    FILE* file = fopen(nomeArquivo, "r");
-    // Verifica se a abertura do arquivo falhou
-    if(file == NULL) {
-        printf("FALHA AO ABRIR ARQUIVO DO MAPA: %s", nomeArquivo);
-        return NULL;
-    }
 
-    // Alocação dinâmica para o mapa (array de ponteiros para char)
+// NOVA FUNÇÃO
+// Responsável apenas por alocar memória para o mapa
+char** alocarMapa() {
+    // 1. Aloca memória para as linhas (um array de ponteiros para char)
     char** mapa = (char**) malloc(LINHAS * sizeof(char*));
-    if(mapa == NULL) {
+    if (mapa == NULL) {
         printf("FALHA AO ALOCAR MEMORIA PARA AS LINHAS DO MAPA");
-        fclose(file);
         return NULL;
     }
 
-    // array de char que vai servir como buffer para ler cada linha do arquivo.
-    char linha[COLUNAS + 2]; // +1 para o '\n' e +1 para o '\0'
-
-    // Loop principal para ler cada linha do mapa.
-    // Itera de 0 até LINHAS-1 para processar todas as linhas do mapa.
+    // 2. Para cada linha, aloca memória para as colunas
     for (int i = 0; i < LINHAS; i++) {
-        // Para cada linha, aloca dinamicamente memória para os caracteres dessa linha.
-        // COLUNAS = 60 = numero de caracteres em cada linha do mapa
-        mapa[i] = (char*)malloc(COLUNAS * sizeof(char));
+        mapa[i] = (char*) malloc(COLUNAS * sizeof(char));
         // Verifica se a alocacao da linha falhou
         if (mapa[i] == NULL) {
             printf("FALHA AO ALOCAR MEMORIA PARA O MAPA NA LINHA: %d.", i);
+            // Se falhar, libera tudo que já foi alocado para não vazar memória
             for (int j = 0; j < i; j++) {
                 free(mapa[j]);
             }
             free(mapa);
-            fclose(file);
             return NULL;
         }
+    }
 
-        // Tenta ler uma linha do arquivo para o buffer 'linha'.
-        // fgets lê até 'sizeof(linha) - 1' caracteres ou até encontrar um '\n' ou EOF.
+    // Se tudo deu certo, retorna o ponteiro para o mapa alocado (e vazio)
+    return mapa;
+}
+
+
+// Função para carregar o mapa a partir de um arquivo texto
+// Em src/gameMap.c
+
+// VERSÃO MODIFICADA
+// Agora usa alocarMapa() e apenas preenche os dados do arquivo.
+char** carregarMapa(const char* nomeArquivo) {
+    // 1. Aloca a memória primeiro, chamando nossa nova função
+    char** mapa = alocarMapa();
+    if (mapa == NULL) {
+        // Se a alocação falhou, não há mais nada a fazer.
+        return NULL; 
+    }
+
+    // 2. Abre o arquivo para leitura
+    FILE* file = fopen(nomeArquivo, "r");
+    if(file == NULL) {
+        printf("FALHA AO ABRIR ARQUIVO DO MAPA: %s", nomeArquivo);
+        liberarMapa(mapa); // Libera a memória que foi alocada antes de sair
+        return NULL;
+    }
+
+    char linha[COLUNAS + 2]; // Buffer
+
+    // 3. Lê o arquivo e preenche o mapa que já foi alocado
+    for (int i = 0; i < LINHAS; i++) {
         if(fgets(linha, sizeof(linha), file) != NULL) {
-            // Se a leitura foi bem-sucedida, copia os caracteres do buffer para a linha do mapa.
-            // Este loop copia apenas os 'COLUNAS' primeiros caracteres.
             for (int j = 0; j < COLUNAS; j++) {
-                // Verifica se o índice 'j' está dentro do comprimento da linha lida
-                // e se o caractere não é uma nova linha ('\n').
-                if (j < (int)strlen(linha) && linha[j] != '\n') {
-                    mapa[i][j] = linha[j]; // Copia o caractere para a matriz do mapa.
+                if (j < (int)strlen(linha) && linha[j] != '\n' && linha[j] != '\r') {
+                    mapa[i][j] = linha[j];
                 } else {
-                    // Se a linha lida for mais curta que 'COLUNAS' ou se um '\n' for encontrado,
-                    // preenche o restante da linha do mapa com o caractere VAZIO.
                     mapa[i][j] = VAZIO;
                 }
             }
-        }
-        else {
-            printf("ERRO DURANTE A LEITURA DO ARQUIVO!");
-            for(int j = 0; j<COLUNAS; j++) {
+        } else {
+            // Se houver um erro de leitura no meio do arquivo, preenche o resto com vazio
+             for (int j = 0; j < COLUNAS; j++) {
                 mapa[i][j] = VAZIO;
-                return NULL;
             }
         }
     }
+    
     fclose(file);
     return mapa;
 }
@@ -143,4 +152,5 @@ PosicaoMapa encontrarPosicaoInicialJogador(char** mapa) {
 
     printf("NAO FOI POSSIVEL ENCONTRAR A POSICAO INICIAL DO JOGADOR NO MAPA!\n");
     return posicaoInicialJogador; // Retorna {-1,-1}
+
 }

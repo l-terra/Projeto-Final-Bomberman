@@ -4,9 +4,9 @@
 #include "menu.h"
 #include "inimigo.h"
 #include <stdio.h>
-#include <stdlib.h> // Para exit, se usado em funções auxiliares
-
-#define MAX_BOMBAS 5
+#include <stdlib.h>
+#include "save.h"
+#include <string.h>
 
 const int screenWidth = 1200;
 const int screenHeight = 600;
@@ -14,8 +14,8 @@ const int cellSize = 20;
 const int hudHeight = 100;
 
 Bomba bombas[MAX_BOMBAS];
-int bombasAtivas = 0;
 
+int bombasAtivas = 0;
 int bombasDisponiveis;
 int vidasJogador;
 int pontuacaoJogador;
@@ -25,36 +25,37 @@ char nomeMapa[32];
 Sound somExplosao;
 Sound somHit;
 
-// <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
 int numInimigos = 0;
 
 PosicaoMapa playerGridPosicao;
 Vector2 playerPosition;
-
 EstadoJogo estadoAtualDoJogo = ESTADO_MENU;
 
+
 void addBomb(PosicaoMapa posicao, double tempoParaExplodir) {
-    if (bombasAtivas < MAX_BOMBAS) {
-        iniciarBomba(&bombas[bombasAtivas], posicao, tempoParaExplodir);
-        bombasAtivas++;
-        TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, bombasAtivas);
-    } else {
-        TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
-    }
+
+if (bombasAtivas < MAX_BOMBAS) {
+
+iniciarBomba(&bombas[bombasAtivas], posicao, tempoParaExplodir);
+
+bombasAtivas++;
+TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, bombasAtivas);
+
+} else {
+TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
 }
+
+} 
 
 int main() {
     InitWindow(screenWidth, screenHeight, "Bomberman");
     SetTargetFPS(60);
 
-    InitAudioDevice(); // Inicializa o dispositivo de áudio
+    InitAudioDevice();
 
-    // Carrega o sons
-    somExplosao = LoadSound("assets/explosion.mp3"); 
+    somExplosao = LoadSound("assets/explosion.mp3");
     somHit = LoadSound("assets/hit.mp3");
-
-    // Ajusta o volume dos sons
     SetSoundVolume(somExplosao, 0.1f);
     SetSoundVolume(somHit, 2.0f);
 
@@ -70,28 +71,89 @@ int main() {
                                     &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas, &nivelAtual,
                                     cellSize);
                     bombasAtivas = 0;
-                    liberarInimigos(&inimigos, &numInimigos); // <--- Garante que inimigos antigos são liberados
-                    carregarInimigos(mapa, &inimigos, &numInimigos); // <--- Carrega novos inimigos
+                    liberarInimigos(&inimigos, &numInimigos);
+                    carregarInimigos(mapa, &inimigos, &numInimigos);
                     estadoAtualDoJogo = ESTADO_JOGANDO;
                     break;
-                case CONTINUAR_JOGO:
-                    if (mapa == NULL) {
-                        TraceLog(LOG_WARNING, "Nenhum jogo em andamento. Iniciando um Novo Jogo.");
-                        iniciarNovoJogo(&mapa, nomeMapa, &playerGridPosicao, &playerPosition,
-                                        &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas, &nivelAtual,
-                                        cellSize);
-                        bombasAtivas = 0;
-                        // inimigos seriam carregados aqui se fosse um fallback, mas a lógica de um "continue"
-                        // implica que eles já estariam lá.
+
+                case CONTINUAR_JOGO:{
+                    SaveState estadoCarregado;
+                    if(CarregarJogo(&estadoCarregado)){
+                        if (mapa != NULL) {
+                            liberarMapa(mapa);
+                        }
+                        if ( inimigos!= NULL){
+                            liberarInimigos(&inimigos,&numInimigos);
+                        }
+                        nivelAtual = estadoCarregado.nivelAtual;
+                        pontuacaoJogador = estadoCarregado.pontuacaoJogador;
+                        vidasJogador = estadoCarregado.vidasJogador;
+                        bombasDisponiveis = estadoCarregado.bombasDisponiveis;
+                        chavesColetadas = estadoCarregado.chavesColetadas;
+
+                        playerGridPosicao = estadoCarregado.playerGridPosicao;
+                        playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
+                        playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+
+                        memcpy(bombas, estadoCarregado.bombas, sizeof(Bomba) * MAX_BOMBAS);
+                        bombasAtivas = estadoCarregado.bombasAtivas;
+
+                        // Recria o mapa a partir dos dados salvos
+                        mapa = alocarMapa(); 
+                        for (int i = 0; i < LINHAS; i++) {
+                            for (int j = 0; j < COLUNAS; j++) {
+                                mapa[i][j] = estadoCarregado.mapa[i][j];
+                            }
+                        }
+
+                        // Recria os inimigos a partir dos dados salvos
+                        numInimigos = estadoCarregado.numInimigos;
+                        inimigos = malloc(sizeof(Inimigo) * numInimigos);
+                        memcpy(inimigos, estadoCarregado.inimigos, sizeof(Inimigo) * numInimigos);
+
+                    estadoAtualDoJogo = ESTADO_JOGANDO;
+                    TraceLog(LOG_INFO, "jogo carregado,iniciando......");
                     }
-                    estadoAtualDoJogo = ESTADO_JOGANDO;
-                    TraceLog(LOG_INFO, "Retornando ao jogo atual.");
-                    break;
+                    else{
+                        TraceLog(LOG_INFO, "Nenhum jogo salvo encontrado");
+                    }
+                    break;      
+                }
                 case SAIR_DO_JOGO:
                     estadoAtualDoJogo = ESTADO_SAIR;
                     break;
-            }
-        } else if (estadoAtualDoJogo == ESTADO_JOGANDO) {
+
+                case SALVAR_JOGO:
+                    if(mapa != NULL) {
+                        SaveState estadoAtualParaSalvar;
+
+                        estadoAtualParaSalvar.nivelAtual = nivelAtual;
+                        estadoAtualParaSalvar.pontuacaoJogador = pontuacaoJogador;
+                        estadoAtualParaSalvar.vidasJogador = vidasJogador;
+                        estadoAtualParaSalvar.bombasDisponiveis = bombasDisponiveis;
+                        estadoAtualParaSalvar.chavesColetadas = chavesColetadas;
+                        estadoAtualParaSalvar.playerGridPosicao = playerGridPosicao;
+                        memcpy(estadoAtualParaSalvar.bombas, bombas, sizeof(Bomba) * MAX_BOMBAS);
+                        estadoAtualParaSalvar.bombasAtivas = bombasAtivas;
+
+                        for (int i = 0; i < LINHAS; i++) {
+                            for (int j = 0; j < COLUNAS; j++) {
+                                estadoAtualParaSalvar.mapa[i][j] = mapa[i][j];
+                            }
+                        }
+                        
+                        memcpy(estadoAtualParaSalvar.inimigos, inimigos, sizeof(Inimigo) * numInimigos);
+                        estadoAtualParaSalvar.numInimigos = numInimigos;
+
+                        SalvarJogo(&estadoAtualParaSalvar);
+                    } else {
+                        TraceLog(LOG_WARNING, "Nenhum jogo em andamento para salvar.");
+                    }
+                    break; 
+            } 
+            
+        }
+        else if (estadoAtualDoJogo == ESTADO_JOGANDO) {
             if (IsKeyPressed(KEY_TAB)) {
                 estadoAtualDoJogo = ESTADO_MENU;
                 continue;
@@ -106,30 +168,24 @@ int main() {
             if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) nextPlayerGridY += 1;
 
             if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
+                bool obstaculoBomba = false;
+                for (int i = 0; i < bombasAtivas; i++) {
+                    if (bombas[i].ativa && bombas[i].posicao.linha == nextPlayerGridY && bombas[i].posicao.coluna == nextPlayerGridX) {
+                        obstaculoBomba = true;
+                        break;
+                    }
+                }
 
-    // --- INÍCIO DA MODIFICAÇÃO ---
-    // Verifica se a célula de destino está ocupada por uma bomba
-    bool obstaculoBomba = false;
-    for (int i = 0; i < bombasAtivas; i++) {
-        if (bombas[i].ativa && bombas[i].posicao.linha == nextPlayerGridY && bombas[i].posicao.coluna == nextPlayerGridX) {
-            obstaculoBomba = true;
-            break;
-        }
-    }
+                char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
+                if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
+                    playerGridPosicao.coluna = nextPlayerGridX;
+                    playerGridPosicao.linha = nextPlayerGridY;
+                    playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
+                    playerPosition.y = (float)playerGridPosicao.linha * cellSize;
 
-    char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
-    // Adiciona a condição !obstaculoBomba
-    if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
-    // --- FIM DA MODIFICAÇÃO ---
-        playerGridPosicao.coluna = nextPlayerGridX;
-        playerGridPosicao.linha = nextPlayerGridY;
-
-        playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
-        playerPosition.y = (float)playerGridPosicao.linha * cellSize;
-
-        if (celulaAlvo == CHAVE) {
-            chavesColetadas++;
-            mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
+                    if (celulaAlvo == CHAVE) {
+                        chavesColetadas++;
+                        mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
                         if (chavesColetadas == 5) {
                             char nomeNovoMapa[32];
@@ -167,7 +223,7 @@ int main() {
                 pontuacaoJogador = 0;
             }
 
-            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit); // <--- Atualiza inimigos
+            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit);
 
             BeginDrawing();
                 ClearBackground(WHITE);
@@ -176,9 +232,8 @@ int main() {
                     desenharBomba(&bombas[i], cellSize);
                 }
                 Desenha_fogo_bomba(GetFrameTime(),mapa);
-                desenharInimigos(inimigos, numInimigos, cellSize); // <--- Desenha inimigos
+                desenharInimigos(inimigos, numInimigos, cellSize);
                 DrawRectangle((int)playerPosition.x, (int)playerPosition.y, cellSize, cellSize, RED);
-
                 DrawRectangle(0, screenHeight - hudHeight, screenWidth, hudHeight, LIGHTGRAY);
                 DrawText(TextFormat("Bombas: %d", bombasDisponiveis), 20, screenHeight - hudHeight + 20, 20, BLACK);
                 DrawText(TextFormat("Vidas: %d", vidasJogador), 200, screenHeight - hudHeight + 20, 20, BLACK);
@@ -187,29 +242,23 @@ int main() {
 
             if (vidasJogador <= 0) {
                 TraceLog(LOG_INFO, "Fim de Jogo! Pontuacao Final: %d", pontuacaoJogador);
-                estadoAtualDoJogo = ESTADO_GAMEOVER; // Mude para ESTADO_GAMEOVER
-                // Não libera o mapa ou inimigos aqui, isso será feito no ESTADO_GAMEOVER
+                estadoAtualDoJogo = ESTADO_GAMEOVER;
             }
         }
         else if (estadoAtualDoJogo == ESTADO_GAMEOVER) {
-            // Lidar com a entrada do usuário na tela de Game Over
-            // ESTA LÓGICA DEVE VIR ANTES DO BEGIN/END DRAWING PARA REAGIR IMEDIATAMENTE
             if (IsKeyPressed(KEY_ENTER)) {
-                estadoAtualDoJogo = ESTADO_MENU; // Volta para o menu
-                // Libera recursos para um novo jogo
+                estadoAtualDoJogo = ESTADO_MENU;
                 if (mapa != NULL) {
                     liberarMapa(mapa);
                     mapa = NULL;
                 }
-                liberarInimigos(&inimigos, &numInimigos); // Libera os inimigos também
-                // IMPORTANTE: ZERAR PONTUAÇÃO E VIDAS AQUI PARA UM NOVO JOGO
+                liberarInimigos(&inimigos, &numInimigos);
                 pontuacaoJogador = 0;
-                vidasJogador = 3; // Ou o valor inicial de vidas
-                bombasDisponiveis = MAX_BOMBAS; // Zera as bombas também
+                vidasJogador = 3;
+                bombasDisponiveis = MAX_BOMBAS;
             }
             if (IsKeyPressed(KEY_Q)) {
-                estadoAtualDoJogo = ESTADO_SAIR; // Sinaliza para sair do jogo
-                // Libera recursos antes de sair
+                estadoAtualDoJogo = ESTADO_SAIR;
                 if (mapa != NULL) {
                     liberarMapa(mapa);
                     mapa = NULL;
@@ -217,28 +266,21 @@ int main() {
                 liberarInimigos(&inimigos, &numInimigos);
             }
 
-            BeginDrawing(); // Agora o BeginDrawing vem depois da lógica de input
-                ClearBackground(BLACK); // Fundo preto para a tela de Game Over
-
-                // Desenha o mapa atrás da tela de Game Over (opcional)
-                // if (mapa != NULL) {
-                //     desenharMapa(mapa, screenWidth, screenHeight, cellSize);
-                // }
-
+            BeginDrawing();
+                ClearBackground(BLACK);
                 DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 80) / 2, screenHeight / 4, 80, RED);
                 DrawText(TextFormat("Pontuacao Final: %d", pontuacaoJogador),
                          screenWidth / 2 - MeasureText(TextFormat("Pontuacao Final: %d", pontuacaoJogador), 40) / 2,
                          screenHeight / 2, 40, WHITE);
-
                 DrawText("Pressione ENTER para voltar ao Menu",
                          screenWidth / 2 - MeasureText("Pressione ENTER para voltar ao Menu", 20) / 2,
                          screenHeight / 2 + 80, 20, GRAY);
                 DrawText("Pressione Q para Sair do Jogo",
                          screenWidth / 2 - MeasureText("Pressione Q para Sair do Jogo", 20) / 2,
                          screenHeight / 2 + 120, 20, GRAY);
-
             EndDrawing();
-        } else if (estadoAtualDoJogo == ESTADO_VITORIA) {
+        }
+        else if (estadoAtualDoJogo == ESTADO_VITORIA) {
             if (IsKeyPressed(KEY_P)) {
                 nivelAtual++;
                 chavesColetadas = 0;
@@ -250,15 +292,13 @@ int main() {
                 mapa = carregarMapa(nomeMapa);
                 if (mapa == NULL) {
                     TraceLog(LOG_ERROR, "Falha ao carregar o proximo nivel: %s", nomeMapa);
-                    estadoAtualDoJogo = ESTADO_MENU; 
+                    estadoAtualDoJogo = ESTADO_MENU;
                     continue;
                 }
 
                 playerGridPosicao = encontrarPosicaoInicialJogador(mapa);
                 playerPosition = (Vector2){(float)playerGridPosicao.coluna * cellSize, (float)playerGridPosicao.linha * cellSize};
-                
                 carregarInimigos(mapa, &inimigos, &numInimigos);
-
                 estadoAtualDoJogo = ESTADO_JOGANDO;
             }
 
@@ -266,7 +306,8 @@ int main() {
                 DrawText("NÍVEL CONCLUÍDO!", GetScreenWidth()/2 - MeasureText("NÍVEL CONCLUÍDO!", 50)/2, 250, 50, GOLD);
                 DrawText("Pressione P para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione P para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
             EndDrawing();
-        } else if (estadoAtualDoJogo == ESTADO_ZERADO) {
+        }
+        else if (estadoAtualDoJogo == ESTADO_ZERADO) {
             if (IsKeyPressed(KEY_ENTER)) {
                 estadoAtualDoJogo = ESTADO_MENU;
             } else if (IsKeyPressed (KEY_Q)) {
@@ -280,37 +321,19 @@ int main() {
                 DrawText("Pressione ENTER para voltar ao menu ou Q para sair.", GetScreenWidth()/2 - MeasureText("Pressione ENTER para voltar ao menu ou Q para sair.", 20)/2, 450, 20, RAYWHITE);
             EndDrawing();
         }
-
-            // Lidar com a entrada do usuário na tela de Game Over
-            if (IsKeyPressed(KEY_ENTER)) {
-                estadoAtualDoJogo = ESTADO_MENU; // Volta para o menu
-                // Libera recursos para um novo jogo
-                if (mapa != NULL) {
-                    liberarMapa(mapa);
-                    mapa = NULL;
-                }
-                liberarInimigos(&inimigos, &numInimigos); // Libera os inimigos também
-            }
-            if (IsKeyPressed(KEY_Q)) {
-                estadoAtualDoJogo = ESTADO_SAIR; // Sinaliza para sair do jogo
-                // Libera recursos antes de sair
-                if (mapa != NULL) {
-                    liberarMapa(mapa);
-                    mapa = NULL;
-                }
-                liberarInimigos(&inimigos, &numInimigos);
-            }
-        }
+        // <-- ERRO LÓGICO CORRIGIDO: O bloco duplicado de 'Game Over' que estava aqui foi removido.
+    }
 
     // Libera o mapa e inimigos ao fechar a janela
     if (mapa != NULL) {
         liberarMapa(mapa);
     }
-    liberarInimigos(&inimigos, &numInimigos); // <--- Libera os inimigos ao sair do jogo
+    liberarInimigos(&inimigos, &numInimigos);
 
-    UnloadSound(somExplosao); // Descarrega o som
-    CloseAudioDevice(); // Fecha o dispositivo de áudio
+    UnloadSound(somExplosao);
+    UnloadSound(somHit);
+    CloseAudioDevice();
 
     CloseWindow();
     return 0;
-} //game over corrigido
+}

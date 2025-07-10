@@ -12,14 +12,16 @@ typedef enum {
     ESTADO_GAMEOVER,
     ESTADO_VITORIA,
     ESTADO_ZERADO,
-    ESTADO_SAIR
+    ESTADO_SAIR,
+    ESTADO_SALVAR
 } EstadoJogo;
 
 // Definição das opções do menu
 typedef enum {
     NOVO_JOGO,
     CONTINUAR_JOGO,
-    SAIR_DO_JOGO
+    SAIR_DO_JOGO,
+    SALVAR_JOGO
 } OpcaoMenu;
 
 // Declaração da função para exibir o menu

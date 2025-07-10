@@ -1,7 +1,10 @@
+#ifndef BOMBA_H
+#define BOMBA_H
 #include "raylib.h"
 #include "gameMap.h"
 #include "inimigo.h"
 
+#define MAX_BOMBAS 3
 #define MAX_RASTROS 10
 #define TEMPO_RASTRO_MAX 0.75
 #define TEMPO_EXPLOSAO 3.0f // Tempo em segundos para a bomba explodir
@@ -48,3 +51,4 @@ void Desenha_fogo_bomba(double deltaTime,char **mapa);
 
 bool processaCelula(PosicaoMapa bombPos, char** mapa, int* pontos, int* vidas, PosicaoMapa playerPos, Inimigo* lista_inimigos, int num_inimigos, int l, int c, Sound somHit);
 
+#endif // BOMBA_H
