@@ -27,6 +27,7 @@ Sound somHit;
 Sound somChave;
 Sound somPassarFase;
 Music musicaVitoria;
+Sound somMenu;
 
 bool somPassarFaseTocado = false;
 
@@ -65,6 +66,7 @@ int main() {
     somExplosao = LoadSound("assets/explosion.mp3"); 
     somHit = LoadSound("assets/hit.mp3");
     musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
+    somMenu = LoadSound("assets/menu.wav");
 
     // Ajusta o volume dos sons
     SetSoundVolume(somExplosao, 0.1f);
@@ -167,6 +169,7 @@ int main() {
         }
         else if (estadoAtualDoJogo == ESTADO_JOGANDO) {
             if (IsKeyPressed(KEY_TAB)) {
+                PlaySound(somMenu);
                 estadoAtualDoJogo = ESTADO_MENU;
                 continue;
             }
@@ -369,6 +372,7 @@ int main() {
     UnloadSound(somExplosao);
     UnloadSound(somHit);
     UnloadMusicStream(musicaVitoria);
+    UnloadSound(somMenu);
     CloseAudioDevice(); // Fecha o dispositivo de áudio
 
     CloseWindow();
