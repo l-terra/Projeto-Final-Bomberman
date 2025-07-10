@@ -3,8 +3,6 @@
 #include <stdlib.h>  // Para alocação dinâmica (malloc, free)
 #include <string.h>  // Para manipulação de strings (fgets)
 
-
-// NOVA FUNÇÃO
 // Responsável apenas por alocar memória para o mapa
 char** alocarMapa() {
     // 1. Aloca memória para as linhas (um array de ponteiros para char)
@@ -33,17 +31,13 @@ char** alocarMapa() {
     return mapa;
 }
 
-
 // Função para carregar o mapa a partir de um arquivo texto
-// Em src/gameMap.c
-
-// VERSÃO MODIFICADA
-// Agora usa alocarMapa() e apenas preenche os dados do arquivo.
+// Usa alocarMapa() e apenas preenche os dados do arquivo.
 char** carregarMapa(const char* nomeArquivo) {
-    // 1. Aloca a memória primeiro, chamando nossa nova função
+    // 1. Aloca a memória primeiro
     char** mapa = alocarMapa();
     if (mapa == NULL) {
-        // Se a alocação falhou, não há mais nada a fazer.
+        // Se a alocação falhou
         return NULL; 
     }
 

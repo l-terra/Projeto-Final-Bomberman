@@ -27,11 +27,10 @@ typedef struct {
 #define COLUNAS 60
 #define CellSize 20
 
-// Função para carregar o mapa a partir de um arquivo de texto
+// Funções para carregar o mapa a partir de um arquivo de texto
 // Retorna um ponteiro para a matriz do mapa alocada dinamicamente
 char** alocarMapa(void); 
 char** carregarMapa(const char* nomeArquivo);
-
 
 // Função para liberar a memória alocada para o mapa
 void liberarMapa(char** gameMap);
@@ -42,4 +41,5 @@ void desenharMapa(char** gameMap, int screenWidth, int screenHeight, int cellSiz
 // Encontra a posicao inicial do jogador no mapa
 // Retorna o struct PosicaoMapa, se o jogador nao for encontrado retorna {-1,-1}
 PosicaoMapa encontrarPosicaoInicialJogador(char** mapa);
+
 #endif

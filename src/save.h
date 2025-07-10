@@ -9,7 +9,7 @@
 #include "inimigo.h"  
 
 
-//máximo de inimigos em qualquer fase.
+// máximo de inimigos em qualquer fase.
 #define MAX_INIMIGOS_SAVE 50
 
 // struct restaurar o jogo exatamente como estava.
@@ -42,7 +42,7 @@ typedef struct SaveState {
 // Preenche uma struct SaveState com os dados atuais do jogo e a salva em um arquivo.
 int SalvarJogo(SaveState* state);
 
-//Carrega os dados de um arquivo de save para uma struct SaveState.
+// Carrega os dados de um arquivo de save para uma struct SaveState.
 int CarregarJogo(SaveState* state);
 
 

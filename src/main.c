@@ -106,14 +106,10 @@ int main() {
                     }
                     break;
 
-                case VOLTAR_AO_JOGO: // Este é o novo caso que não deve afetar o salvar
-                    // Se o jogo estava em andamento (mapa não NULL), retorna a ele.
-                    // Caso contrário, pode ser um estado inicial sem jogo.
+                case VOLTAR_AO_JOGO:
                     if (gameState.mapa != NULL) {
                         gameState.estadoAtualDoJogo = ESTADO_JOGANDO;
                     } else {
-                        // Se não há um jogo em andamento, permanecer no menu pode ser mais lógico.
-                        // Ou mudar para ESTADO_MENU explicitamente, embora já esteja lá.
                         TraceLog(LOG_WARNING, "Nenhum jogo em andamento para voltar. Permanecendo no menu.");
                         gameState.estadoAtualDoJogo = ESTADO_MENU;
                     }
@@ -148,7 +144,6 @@ int main() {
                 nextPlayerGridY += 1;
                 gameState.direcaoAtualJogador = DIR_BAIXO;
             }
-            // ... dentro do loop do ESTADO_JOGANDO
 
             if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
     bool obstaculoBomba = false;
@@ -161,7 +156,6 @@ int main() {
 
     char celulaAlvo = gameState.mapa[nextPlayerGridY][nextPlayerGridX];
 
-    // Apenas UMA verificação, combinando toda a lógica
     if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
         gameState.playerGridPosicao.coluna = nextPlayerGridX;
         gameState.playerGridPosicao.linha = nextPlayerGridY;
@@ -175,7 +169,7 @@ int main() {
             gameState.mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
             // Lógica para verificar se o nível foi concluído
-            if (gameState.chavesColetadas == 5) { // Supondo que só há 1 chave por nível
+            if (gameState.chavesColetadas == 5) {
                 char nomeNovoMapa[32];
                 sprintf(nomeNovoMapa, "mapa%d.txt", gameState.nivelAtual + 1);
                 FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
@@ -226,7 +220,6 @@ int main() {
                 gameState.pontuacaoJogador = 0;
             }
 
-            // Alteração aqui: Passando as bombas para a função de atualização dos inimigos
             atualizarInimigos(gameState.inimigos, gameState.numInimigos, gameState.mapa, gameState.playerGridPosicao, &gameState.vidasJogador, &gameState.pontuacaoJogador, GetFrameTime(), gameState.somHit, gameState.bombas, gameState.bombasAtivas);
 
             BeginDrawing();
@@ -340,7 +333,6 @@ int main() {
                 DrawText("Pressione ENTER para voltar ao menu ou Q para sair.", GetScreenWidth()/2 - MeasureText("Pressione ENTER para voltar ao menu ou Q para sair.", 20)/2, 450, 20, RAYWHITE);
             EndDrawing();
         }
-        // <-- ERRO LÓGICO CORRIGIDO: O bloco duplicado de 'Game Over' que estava aqui foi removido.
     }
 
     descarregarGameState(&gameState);
