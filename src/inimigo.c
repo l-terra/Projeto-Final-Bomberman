@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <math.h> // Para abs()
 
-#define INTERVALO_MOVIMENTO_INIMIGO 0.9 // Velocidade de movimentação
+#define INTERVALO_MOVIMENTO_INIMIGO 0.5 // Velocidade de movimentação
 
 // Função auxiliar para verificar se uma posição é válida para se mover
 static bool podeMoverPara(PosicaoMapa pos, char** mapa, const Inimigo* todosInimigos, int numInimigos, int inimigoAtualId) {

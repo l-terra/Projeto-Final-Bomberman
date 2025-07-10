@@ -24,9 +24,9 @@ int nivelAtual;
 char nomeMapa[32];
 Sound somExplosao;
 Sound somHit;
+Sound somChave;
 Music musicaVitoria;
 
-// <--- Adicione estas declarações de variáveis globais para inimigos
 Inimigo* inimigos = NULL;
 int numInimigos = 0;
 
@@ -52,6 +52,7 @@ int main() {
     InitAudioDevice(); // Inicializa o dispositivo de áudio
 
     // Carrega o sons
+    somChave = LoadSound("assets/keys.mp3");
     somExplosao = LoadSound("assets/explosion.mp3"); 
     somHit = LoadSound("assets/hit.mp3");
     musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
@@ -132,6 +133,7 @@ int main() {
 
         if (celulaAlvo == CHAVE) {
             chavesColetadas++;
+            PlaySound(somChave);
             mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
                         if (chavesColetadas == 1) {
@@ -319,6 +321,7 @@ int main() {
     }
     liberarInimigos(&inimigos, &numInimigos); // <--- Libera os inimigos ao sair do jogo
 
+    UnloadSound(somChave);
     UnloadSound(somExplosao);
     UnloadSound(somHit);
     UnloadMusicStream(musicaVitoria);
@@ -326,4 +329,4 @@ int main() {
 
     CloseWindow();
     return 0;
-} //game over corrigido
+}
