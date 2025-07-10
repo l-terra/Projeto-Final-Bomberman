@@ -25,7 +25,10 @@ char nomeMapa[32];
 Sound somExplosao;
 Sound somHit;
 Sound somChave;
+Sound somPassarFase;
 Music musicaVitoria;
+
+bool somPassarFaseTocado = false;
 
 Inimigo* inimigos = NULL;
 int numInimigos = 0;
@@ -52,6 +55,7 @@ int main() {
     InitAudioDevice(); // Inicializa o dispositivo de áudio
 
     // Carrega o sons
+    somPassarFase = LoadSound("assets/passarfase.mp3");
     somChave = LoadSound("assets/keys.mp3");
     somExplosao = LoadSound("assets/explosion.mp3"); 
     somHit = LoadSound("assets/hit.mp3");
@@ -244,7 +248,16 @@ int main() {
 
             EndDrawing();
         } else if (estadoAtualDoJogo == ESTADO_VITORIA) {
+            if (!somPassarFaseTocado) { //
+                PlaySound(somPassarFase); //
+                somPassarFaseTocado = true; //
+            }
+
             if (IsKeyPressed(KEY_P)) {
+                if (IsSoundPlaying(somPassarFase)) {
+                    StopSound(somPassarFase);
+                }
+
                 nivelAtual++;
                 chavesColetadas = 0;
 
