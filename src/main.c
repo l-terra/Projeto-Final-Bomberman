@@ -163,7 +163,20 @@ int main() {
                     } else {
                         TraceLog(LOG_WARNING, "Nenhum jogo em andamento para salvar.");
                     }
-                    break; 
+                    break;
+
+                case VOLTAR_AO_JOGO: // Este é o novo caso que não deve afetar o salvar
+                    // Se o jogo estava em andamento (mapa não NULL), retorna a ele.
+                    // Caso contrário, pode ser um estado inicial sem jogo.
+                    if (mapa != NULL) { 
+                        estadoAtualDoJogo = ESTADO_JOGANDO; 
+                    } else {
+                        // Se não há um jogo em andamento, permanecer no menu pode ser mais lógico.
+                        // Ou mudar para ESTADO_MENU explicitamente, embora já esteja lá.
+                        TraceLog(LOG_WARNING, "Nenhum jogo em andamento para voltar. Permanecendo no menu.");
+                        estadoAtualDoJogo = ESTADO_MENU; 
+                    }
+                break;
             } 
             
         }
