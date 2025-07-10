@@ -9,16 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-void addBomb(GameState* gameState, PosicaoMapa posicao, double tempoParaExplodir) {
-    if (gameState->bombasAtivas < MAX_BOMBAS) {
-        iniciarBomba(&gameState->bombas[gameState->bombasAtivas], posicao, tempoParaExplodir);
-        gameState->bombasAtivas++;
-        TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, gameState->bombasAtivas);
-    } else {
-        TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
-    }
-}
+void addBomb(GameState* gameState, PosicaoMapa posicao, double tempoParaExplodir);
 
 int main() {
     GameState gameState;
@@ -356,4 +347,14 @@ int main() {
 
     CloseWindow();
     return 0;
+}
+
+void addBomb(GameState* gameState, PosicaoMapa posicao, double tempoParaExplodir) {
+    if (gameState->bombasAtivas < MAX_BOMBAS) {
+        iniciarBomba(&gameState->bombas[gameState->bombasAtivas], posicao, tempoParaExplodir);
+        gameState->bombasAtivas++;
+        TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, gameState->bombasAtivas);
+    } else {
+        TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
+    }
 }
