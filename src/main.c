@@ -241,8 +241,9 @@ int main() {
             if (pontuacaoJogador < 0) {
                 pontuacaoJogador = 0;
             }
-
-            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit);
+            
+            // Alteração aqui: Passando as bombas para a função de atualização dos inimigos
+            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit, bombas, bombasAtivas);
 
             BeginDrawing();
                 ClearBackground(WHITE);

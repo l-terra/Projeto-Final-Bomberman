@@ -6,7 +6,8 @@
 #define INTERVALO_MOVIMENTO_INIMIGO 0.5 // Velocidade de movimentação
 
 // Função auxiliar para verificar se uma posição é válida para se mover
-static bool podeMoverPara(PosicaoMapa pos, char** mapa, const Inimigo* todosInimigos, int numInimigos, int inimigoAtualId) {
+// Assinatura atualizada para receber a lista de bombas
+static bool podeMoverPara(PosicaoMapa pos, char** mapa, const Inimigo* todosInimigos, int numInimigos, int inimigoAtualId, const Bomba* lista_bombas, int num_bombas) {
     // 1. Checa limites do mapa
     if (pos.linha < 0 || pos.linha >= LINHAS || pos.coluna < 0 || pos.coluna >= COLUNAS) {
         return false;
@@ -23,11 +24,18 @@ static bool podeMoverPara(PosicaoMapa pos, char** mapa, const Inimigo* todosInim
             return false;
         }
     }
+    // 4. Checa bombas ativas (NOVA VERIFICAÇÃO)
+    for (int i = 0; i < num_bombas; i++) {
+        if (lista_bombas[i].ativa && lista_bombas[i].posicao.linha == pos.linha && lista_bombas[i].posicao.coluna == pos.coluna) {
+            return false; // Retorna falso se houver uma bomba na posição
+        }
+    }
     return true;
 }
 
 
-void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, PosicaoMapa playerPos, int* vidas, int* pontuacao, double deltaTime, Sound hitSom) {
+// Assinatura atualizada para receber a lista de bombas
+void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, PosicaoMapa playerPos, int* vidas, int* pontuacao, double deltaTime, Sound hitSom, const Bomba* lista_bombas, int num_bombas) {
     static double tempoAcumulado = 0;
     tempoAcumulado += deltaTime;
 
@@ -63,28 +71,29 @@ void atualizarInimigos(Inimigo* lista_inimigos, int num_inimigos, char** mapa, P
         // Tenta mover na direção principal
         proximaPosicao.linha = inimigo->posicao.linha + ((direcaoPrincipal == BAIXO) - (direcaoPrincipal == CIMA));
         proximaPosicao.coluna = inimigo->posicao.coluna + ((direcaoPrincipal == DIREITA) - (direcaoPrincipal == ESQUERDA));
-        if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i)) {
+        // Chamada atualizada para passar a lista de bombas
+        if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i, lista_bombas, num_bombas)) {
             inimigo->posicao = proximaPosicao;
         }
         // Se não puder, tenta mover para o primeiro lado
         else {
             proximaPosicao.linha = inimigo->posicao.linha + ((lado1 == BAIXO) - (lado1 == CIMA));
             proximaPosicao.coluna = inimigo->posicao.coluna + ((lado1 == DIREITA) - (lado1 == ESQUERDA));
-            if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i)) {
+            if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i, lista_bombas, num_bombas)) {
                 inimigo->posicao = proximaPosicao;
             }
             // Se também não puder, tenta o segundo lado
             else {
                  proximaPosicao.linha = inimigo->posicao.linha + ((lado2 == BAIXO) - (lado2 == CIMA));
                  proximaPosicao.coluna = inimigo->posicao.coluna + ((lado2 == DIREITA) - (lado2 == ESQUERDA));
-                 if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i)) {
+                 if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i, lista_bombas, num_bombas)) {
                     inimigo->posicao = proximaPosicao;
                  }
                  // Em último caso, tenta a direção oposta (para desempacar)
                  else {
                     proximaPosicao.linha = inimigo->posicao.linha + ((direcaoOposta == BAIXO) - (direcaoOposta == CIMA));
                     proximaPosicao.coluna = inimigo->posicao.coluna + ((direcaoOposta == DIREITA) - (direcaoOposta == ESQUERDA));
-                    if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i)) {
+                    if (podeMoverPara(proximaPosicao, mapa, lista_inimigos, num_inimigos, i, lista_bombas, num_bombas)) {
                         inimigo->posicao = proximaPosicao;
                     }
                  }

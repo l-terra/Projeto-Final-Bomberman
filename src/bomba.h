@@ -2,7 +2,8 @@
 #define BOMBA_H
 #include "raylib.h"
 #include "gameMap.h"
-#include "inimigo.h"
+
+typedef struct Inimigo Inimigo;
 
 #define MAX_BOMBAS 3
 #define MAX_RASTROS 10
