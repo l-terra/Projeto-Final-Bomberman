@@ -3,18 +3,7 @@
 
 #include "raylib.h"
 #include "gameMap.h"
-
-// Definição dos estados do jogo
-typedef enum {
-    ESTADO_MENU,
-    ESTADO_JOGANDO,
-    ESTADO_PAUSADO,
-    ESTADO_GAMEOVER,
-    ESTADO_VITORIA,
-    ESTADO_ZERADO,
-    ESTADO_SAIR,
-    ESTADO_SALVAR
-} EstadoJogo;
+#include "gameDefs.h"
 
 // Definição das opções do menu
 typedef enum {
@@ -29,6 +18,6 @@ typedef enum {
 OpcaoMenu exibirMenu(int screenWidth, int screenHeight);
 
 // Declaração da função para iniciar um novo jogo
-void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition, int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas, int* nivelAtual, int cellSize);
+void iniciarNovoJogo(GameState* gameState);
 
 #endif // MENU_H

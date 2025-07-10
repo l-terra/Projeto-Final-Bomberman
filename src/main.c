@@ -2,134 +2,80 @@
 #include "gameMap.h"
 #include "bomba.h"
 #include "menu.h"
+#include "gameDefs.h"
 #include "inimigo.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "save.h"
 #include <string.h>
 
-const int screenWidth = 1200;
-const int screenHeight = 600;
-const int cellSize = 20;
-const int hudHeight = 100;
 
-Bomba bombas[MAX_BOMBAS];
-
-int bombasAtivas = 0;
-int bombasDisponiveis;
-int vidasJogador;
-int pontuacaoJogador;
-int chavesColetadas;
-int nivelAtual;
-char nomeMapa[32];
-Sound somExplosao;
-Sound somHit;
-Sound somChave;
-Sound somPassarFase;
-Music musicaVitoria;
-Sound somMenu;
-
-bool somPassarFaseTocado = false;
-
-Inimigo* inimigos = NULL;
-int numInimigos = 0;
-
-PosicaoMapa playerGridPosicao;
-Vector2 playerPosition;
-EstadoJogo estadoAtualDoJogo = ESTADO_MENU;
-
-typedef enum {
-    DIR_DIREITA,
-    DIR_ESQUERDA,
-    DIR_CIMA,
-    DIR_BAIXO
-} DirecaoJogador;
-
-// Variável para armazenar a última direção do jogador. Começa virado para baixo.
-DirecaoJogador direcaoAtualJogador = DIR_BAIXO;
-
-void addBomb(PosicaoMapa posicao, double tempoParaExplodir) {
-    if (bombasAtivas < MAX_BOMBAS) {
-        iniciarBomba(&bombas[bombasAtivas], posicao, tempoParaExplodir);
-        bombasAtivas++;
-        TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, bombasAtivas);
+void addBomb(GameState* gameState, PosicaoMapa posicao, double tempoParaExplodir) {
+    if (gameState->bombasAtivas < MAX_BOMBAS) {
+        iniciarBomba(&gameState->bombas[gameState->bombasAtivas], posicao, tempoParaExplodir);
+        gameState->bombasAtivas++;
+        TraceLog(LOG_INFO, "Bomba plantada em (%d, %d). Bombas ativas: %d", posicao.coluna, posicao.linha, gameState->bombasAtivas);
     } else {
         TraceLog(LOG_WARNING, "Maximo de bombas ativas atingido (%d). Nao foi possivel plantar nova bomba.", MAX_BOMBAS);
     }
 }
 
 int main() {
-    InitWindow(screenWidth, screenHeight, "Bomberman");
+    GameState gameState;
+    inicializarGameState(&gameState, 1200, 600, 20, 100);
+
+    InitWindow(gameState.screenWidth, gameState.screenHeight, "Bomberman");
     SetTargetFPS(60);
 
-    InitAudioDevice();
-
-    // Carrega o sons
-    somPassarFase = LoadSound("assets/passarfase.mp3");
-    somChave = LoadSound("assets/keys.mp3");
-    somExplosao = LoadSound("assets/explosion.mp3");
-    somHit = LoadSound("assets/hit.mp3");
-    musicaVitoria = LoadMusicStream("assets/vitoria.mp3");
-    somMenu = LoadSound("assets/Menu.wav");
-
-    // Ajusta o volume dos sons
-    SetSoundVolume(somExplosao, 0.1f);
-    SetSoundVolume(somHit, 1.0f);
-    SetMusicVolume(musicaVitoria, 0.3f);
-
-    char** mapa = NULL;
-
-    while(!WindowShouldClose() && estadoAtualDoJogo != ESTADO_SAIR) {
-        if (estadoAtualDoJogo == ESTADO_MENU) {
-            OpcaoMenu selecaoMenu = exibirMenu(screenWidth, screenHeight);
+    while(!WindowShouldClose() && gameState.estadoAtualDoJogo != ESTADO_SAIR) {
+        if (gameState.estadoAtualDoJogo == ESTADO_MENU) {
+            OpcaoMenu selecaoMenu = exibirMenu(gameState.screenWidth, gameState.screenHeight);
 
             switch (selecaoMenu) {
                 case NOVO_JOGO:
-                    iniciarNovoJogo(&mapa, nomeMapa, &playerGridPosicao, &playerPosition,
-                                    &bombasDisponiveis, &vidasJogador, &pontuacaoJogador, &chavesColetadas, &nivelAtual,
-                                    cellSize);
-                    bombasAtivas = 0;
-                    liberarInimigos(&inimigos, &numInimigos);
-                    carregarInimigos(mapa, &inimigos, &numInimigos);
-                    estadoAtualDoJogo = ESTADO_JOGANDO;
+                    iniciarNovoJogo(&gameState);
+                    gameState.bombasAtivas = 0;
+                    liberarInimigos(&gameState.inimigos, &gameState.numInimigos);
+                    carregarInimigos(gameState.mapa, &gameState.inimigos, &gameState.numInimigos);
+                    gameState.estadoAtualDoJogo = ESTADO_JOGANDO;
                     break;
 
                 case CONTINUAR_JOGO:{
                     SaveState estadoCarregado;
                     if(CarregarJogo(&estadoCarregado)){
-                        if (mapa != NULL) {
-                            liberarMapa(mapa);
+                        if (gameState.mapa != NULL) {
+                            liberarMapa(gameState.mapa);
                         }
-                        if ( inimigos!= NULL){
-                            liberarInimigos(&inimigos,&numInimigos);
+                        if (gameState.inimigos!= NULL){
+                            liberarInimigos(&gameState.inimigos,&gameState.numInimigos);
                         }
-                        nivelAtual = estadoCarregado.nivelAtual;
-                        pontuacaoJogador = estadoCarregado.pontuacaoJogador;
-                        vidasJogador = estadoCarregado.vidasJogador;
-                        bombasDisponiveis = estadoCarregado.bombasDisponiveis;
-                        chavesColetadas = estadoCarregado.chavesColetadas;
+                        gameState.nivelAtual = estadoCarregado.nivelAtual;
+                        gameState.pontuacaoJogador = estadoCarregado.pontuacaoJogador;
+                        gameState.vidasJogador = estadoCarregado.vidasJogador;
+                        gameState.bombasDisponiveis = estadoCarregado.bombasDisponiveis;
+                        gameState.chavesColetadas = estadoCarregado.chavesColetadas;
 
-                        playerGridPosicao = estadoCarregado.playerGridPosicao;
-                        playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
-                        playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+                        gameState.playerGridPosicao = estadoCarregado.playerGridPosicao;
+                        gameState.playerPosition.x = (float)gameState.playerGridPosicao.coluna * gameState.cellSize;
+                        gameState.playerPosition.y = (float)gameState.playerGridPosicao.linha * gameState.cellSize;
 
-                        memcpy(bombas, estadoCarregado.bombas, sizeof(Bomba) * MAX_BOMBAS);
-                        bombasAtivas = estadoCarregado.bombasAtivas;
+                        memcpy(gameState.bombas, estadoCarregado.bombas, sizeof(Bomba) * MAX_BOMBAS);
+                        gameState.bombasAtivas = estadoCarregado.bombasAtivas;
 
                         // Recria o mapa a partir dos dados salvos
-                        mapa = alocarMapa();
+                        gameState.mapa = alocarMapa();
                         for (int i = 0; i < LINHAS; i++) {
                             for (int j = 0; j < COLUNAS; j++) {
-                                mapa[i][j] = estadoCarregado.mapa[i][j];
+                                gameState.mapa[i][j] = estadoCarregado.mapa[i][j];
                             }
                         }
 
                         // Recria os inimigos a partir dos dados salvos
-                        numInimigos = estadoCarregado.numInimigos;
-                        inimigos = malloc(sizeof(Inimigo) * numInimigos);
-                        memcpy(inimigos, estadoCarregado.inimigos, sizeof(Inimigo) * numInimigos);
+                        gameState.numInimigos = estadoCarregado.numInimigos;
+                        gameState.inimigos = malloc(sizeof(Inimigo) * gameState.numInimigos);
+                        memcpy(gameState.inimigos, estadoCarregado.inimigos, sizeof(Inimigo) * gameState.numInimigos);
 
-                    estadoAtualDoJogo = ESTADO_JOGANDO;
+                    gameState.estadoAtualDoJogo = ESTADO_JOGANDO;
                     TraceLog(LOG_INFO, "jogo carregado,iniciando......");
                     }
                     else{
@@ -138,30 +84,30 @@ int main() {
                     break;
                 }
                 case SAIR_DO_JOGO:
-                    estadoAtualDoJogo = ESTADO_SAIR;
+                    gameState.estadoAtualDoJogo = ESTADO_SAIR;
                     break;
 
                 case SALVAR_JOGO:
-                    if(mapa != NULL) {
+                    if(gameState.mapa != NULL) {
                         SaveState estadoAtualParaSalvar;
 
-                        estadoAtualParaSalvar.nivelAtual = nivelAtual;
-                        estadoAtualParaSalvar.pontuacaoJogador = pontuacaoJogador;
-                        estadoAtualParaSalvar.vidasJogador = vidasJogador;
-                        estadoAtualParaSalvar.bombasDisponiveis = bombasDisponiveis;
-                        estadoAtualParaSalvar.chavesColetadas = chavesColetadas;
-                        estadoAtualParaSalvar.playerGridPosicao = playerGridPosicao;
-                        memcpy(estadoAtualParaSalvar.bombas, bombas, sizeof(Bomba) * MAX_BOMBAS);
-                        estadoAtualParaSalvar.bombasAtivas = bombasAtivas;
+                        estadoAtualParaSalvar.nivelAtual = gameState.nivelAtual;
+                        estadoAtualParaSalvar.pontuacaoJogador = gameState.pontuacaoJogador;
+                        estadoAtualParaSalvar.vidasJogador = gameState.vidasJogador;
+                        estadoAtualParaSalvar.bombasDisponiveis = gameState.bombasDisponiveis;
+                        estadoAtualParaSalvar.chavesColetadas = gameState.chavesColetadas;
+                        estadoAtualParaSalvar.playerGridPosicao = gameState.playerGridPosicao;
+                        memcpy(estadoAtualParaSalvar.bombas, gameState.bombas, sizeof(Bomba) * MAX_BOMBAS);
+                        estadoAtualParaSalvar.bombasAtivas = gameState.bombasAtivas;
 
                         for (int i = 0; i < LINHAS; i++) {
                             for (int j = 0; j < COLUNAS; j++) {
-                                estadoAtualParaSalvar.mapa[i][j] = mapa[i][j];
+                                estadoAtualParaSalvar.mapa[i][j] = gameState.mapa[i][j];
                             }
                         }
 
-                        memcpy(estadoAtualParaSalvar.inimigos, inimigos, sizeof(Inimigo) * numInimigos);
-                        estadoAtualParaSalvar.numInimigos = numInimigos;
+                        memcpy(estadoAtualParaSalvar.inimigos, gameState.inimigos, sizeof(Inimigo) * gameState.numInimigos);
+                        estadoAtualParaSalvar.numInimigos = gameState.numInimigos;
 
                         SalvarJogo(&estadoAtualParaSalvar);
                     } else {
@@ -172,93 +118,93 @@ int main() {
                 case VOLTAR_AO_JOGO: // Este é o novo caso que não deve afetar o salvar
                     // Se o jogo estava em andamento (mapa não NULL), retorna a ele.
                     // Caso contrário, pode ser um estado inicial sem jogo.
-                    if (mapa != NULL) {
-                        estadoAtualDoJogo = ESTADO_JOGANDO;
+                    if (gameState.mapa != NULL) {
+                        gameState.estadoAtualDoJogo = ESTADO_JOGANDO;
                     } else {
                         // Se não há um jogo em andamento, permanecer no menu pode ser mais lógico.
                         // Ou mudar para ESTADO_MENU explicitamente, embora já esteja lá.
                         TraceLog(LOG_WARNING, "Nenhum jogo em andamento para voltar. Permanecendo no menu.");
-                        estadoAtualDoJogo = ESTADO_MENU;
+                        gameState.estadoAtualDoJogo = ESTADO_MENU;
                     }
                 break;
             }
         }
-        else if (estadoAtualDoJogo == ESTADO_JOGANDO) {
-            somPassarFaseTocado = false;
+        else if (gameState.estadoAtualDoJogo == ESTADO_JOGANDO) {
+            gameState.somPassarFaseTocado = false;
             if (IsKeyPressed(KEY_TAB)) {
-                PlaySound(somMenu);
-                estadoAtualDoJogo = ESTADO_MENU;
+                PlaySound(gameState.somMenu);
+                gameState.estadoAtualDoJogo = ESTADO_MENU;
                 continue;
             }
 
-            int nextPlayerGridX = playerGridPosicao.coluna;
-            int nextPlayerGridY = playerGridPosicao.linha;
+            int nextPlayerGridX = gameState.playerGridPosicao.coluna;
+            int nextPlayerGridY = gameState.playerGridPosicao.linha;
 
 
             if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) {
                 nextPlayerGridX += 1;
-                direcaoAtualJogador = DIR_DIREITA;
+                gameState.direcaoAtualJogador = DIR_DIREITA;
             }
             else if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)) {
                 nextPlayerGridX -= 1;
-                direcaoAtualJogador = DIR_ESQUERDA;
+                gameState.direcaoAtualJogador = DIR_ESQUERDA;
             }
             else if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
                 nextPlayerGridY -= 1;
-                direcaoAtualJogador = DIR_CIMA;
+                gameState.direcaoAtualJogador = DIR_CIMA;
             }
             else if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
                 nextPlayerGridY += 1;
-                direcaoAtualJogador = DIR_BAIXO;
+                gameState.direcaoAtualJogador = DIR_BAIXO;
             }
             // ... dentro do loop do ESTADO_JOGANDO
 
             if(nextPlayerGridX >= 0 && nextPlayerGridX < COLUNAS && nextPlayerGridY >= 0 && nextPlayerGridY < LINHAS) {
     bool obstaculoBomba = false;
-    for (int i = 0; i < bombasAtivas; i++) {
-        if (bombas[i].ativa && bombas[i].posicao.linha == nextPlayerGridY && bombas[i].posicao.coluna == nextPlayerGridX) {
+    for (int i = 0; i < gameState.bombasAtivas; i++) {
+        if (gameState.bombas[i].ativa && gameState.bombas[i].posicao.linha == nextPlayerGridY && gameState.bombas[i].posicao.coluna == nextPlayerGridX) {
             obstaculoBomba = true;
             break;
         }
     }
 
-    char celulaAlvo = mapa[nextPlayerGridY][nextPlayerGridX];
+    char celulaAlvo = gameState.mapa[nextPlayerGridY][nextPlayerGridX];
 
     // Apenas UMA verificação, combinando toda a lógica
     if (!obstaculoBomba && (celulaAlvo == VAZIO || celulaAlvo == INIMIGO || celulaAlvo == CHAVE)) {
-        playerGridPosicao.coluna = nextPlayerGridX;
-        playerGridPosicao.linha = nextPlayerGridY;
-        playerPosition.x = (float)playerGridPosicao.coluna * cellSize;
-        playerPosition.y = (float)playerGridPosicao.linha * cellSize;
+        gameState.playerGridPosicao.coluna = nextPlayerGridX;
+        gameState.playerGridPosicao.linha = nextPlayerGridY;
+        gameState.playerPosition.x = (float)gameState.playerGridPosicao.coluna * gameState.cellSize;
+        gameState.playerPosition.y = (float)gameState.playerGridPosicao.linha * gameState.cellSize;
 
         // Se a célula era a chave, coleta-a
         if (celulaAlvo == CHAVE) {
-            chavesColetadas++;
-            PlaySound(somChave);
-            mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
+            gameState.chavesColetadas++;
+            PlaySound(gameState.somChave);
+            gameState.mapa[nextPlayerGridY][nextPlayerGridX] = VAZIO;
 
             // Lógica para verificar se o nível foi concluído
-            if (chavesColetadas == 1) { // Supondo que só há 1 chave por nível
+            if (gameState.chavesColetadas == 1) { // Supondo que só há 1 chave por nível
                 char nomeNovoMapa[32];
-                sprintf(nomeNovoMapa, "mapa%d.txt", nivelAtual + 1);
+                sprintf(nomeNovoMapa, "mapa%d.txt", gameState.nivelAtual + 1);
                 FILE* arquivoNovoMapa = fopen(nomeNovoMapa, "r");
                 if (arquivoNovoMapa == NULL) {
-                    estadoAtualDoJogo = ESTADO_ZERADO;
+                    gameState.estadoAtualDoJogo = ESTADO_ZERADO;
                 } else {
                     fclose(arquivoNovoMapa);
-                    estadoAtualDoJogo = ESTADO_VITORIA;
+                    gameState.estadoAtualDoJogo = ESTADO_VITORIA;
                             }
                         }
                     }
                 }
             }
 
-            if (IsKeyPressed(KEY_B) && bombasDisponiveis > 0) {
+            if (IsKeyPressed(KEY_B) && gameState.bombasDisponiveis > 0) {
                 // Começa com a posição atual do jogador como base
-                PosicaoMapa posicaoBomba = playerGridPosicao;
+                PosicaoMapa posicaoBomba = gameState.playerGridPosicao;
 
                 // Ajusta a posição da bomba com base na direção do jogador
-                switch (direcaoAtualJogador) {
+                switch (gameState.direcaoAtualJogador) {
                     case DIR_DIREITA:   posicaoBomba.coluna++; break;
                     case DIR_ESQUERDA:  posicaoBomba.coluna--; break;
                     case DIR_CIMA:      posicaoBomba.linha--;  break;
@@ -269,131 +215,131 @@ int main() {
                 // e se o espaço está vazio para colocar a bomba.
                 if (posicaoBomba.coluna >= 0 && posicaoBomba.coluna < COLUNAS &&
                     posicaoBomba.linha >= 0 && posicaoBomba.linha < LINHAS &&
-                    mapa[posicaoBomba.linha][posicaoBomba.coluna] == VAZIO)
+                    gameState.mapa[posicaoBomba.linha][posicaoBomba.coluna] == VAZIO)
                 {
-                    addBomb(posicaoBomba, TEMPO_EXPLOSAO);
-                    bombasDisponiveis--;
+                    addBomb(&gameState, posicaoBomba, TEMPO_EXPLOSAO);
+                    gameState.bombasDisponiveis--;
                 }
             }
 
-            for (int i = 0; i < bombasAtivas; ) {
-                if (atualizarBomba(&bombas[i], GetFrameTime(), mapa, &pontuacaoJogador, &vidasJogador, playerGridPosicao, &bombasDisponiveis, inimigos, numInimigos, somExplosao, somHit)) {
-                    bombas[i] = bombas[bombasAtivas - 1];
-                    bombasAtivas--;
+            for (int i = 0; i < gameState.bombasAtivas; ) {
+                if (atualizarBomba(&gameState.bombas[i], GetFrameTime(), gameState.mapa, &gameState.pontuacaoJogador, &gameState.vidasJogador, gameState.playerGridPosicao, &gameState.bombasDisponiveis, gameState.inimigos, gameState.numInimigos, gameState.somExplosao, gameState.somHit)) {
+                    gameState.bombas[i] = gameState.bombas[gameState.bombasAtivas - 1];
+                    gameState.bombasAtivas--;
                 } else {
                     i++;
                 }
             }
 
-            if (pontuacaoJogador < 0) {
-                pontuacaoJogador = 0;
+            if (gameState.pontuacaoJogador < 0) {
+                gameState.pontuacaoJogador = 0;
             }
 
             // Alteração aqui: Passando as bombas para a função de atualização dos inimigos
-            atualizarInimigos(inimigos, numInimigos, mapa, playerGridPosicao, &vidasJogador, &pontuacaoJogador, GetFrameTime(), somHit, bombas, bombasAtivas);
+            atualizarInimigos(gameState.inimigos, gameState.numInimigos, gameState.mapa, gameState.playerGridPosicao, &gameState.vidasJogador, &gameState.pontuacaoJogador, GetFrameTime(), gameState.somHit, gameState.bombas, gameState.bombasAtivas);
 
             BeginDrawing();
                 ClearBackground(WHITE);
-                desenharMapa(mapa, screenWidth, screenHeight, cellSize);
-                for (int i = 0; i < bombasAtivas; i++) {
-                    desenharBomba(&bombas[i], cellSize);
+                desenharMapa(gameState.mapa, gameState.screenWidth, gameState.screenHeight, gameState.cellSize);
+                for (int i = 0; i < gameState.bombasAtivas; i++) {
+                    desenharBomba(&gameState.bombas[i], gameState.cellSize);
                 }
-                Desenha_fogo_bomba(GetFrameTime(),mapa);
-                desenharInimigos(inimigos, numInimigos, cellSize);
-                DrawRectangle((int)playerPosition.x, (int)playerPosition.y, cellSize, cellSize, RED);
-                DrawRectangle(0, screenHeight - hudHeight, screenWidth, hudHeight, LIGHTGRAY);
-                DrawText(TextFormat("Bombas: %d", bombasDisponiveis), 20, screenHeight - hudHeight + 20, 20, BLACK);
-                DrawText(TextFormat("Vidas: %d", vidasJogador), 200, screenHeight - hudHeight + 20, 20, BLACK);
-                DrawText(TextFormat("Pontuacao: %d", pontuacaoJogador), 400, screenHeight - hudHeight + 20, 20, BLACK);
+                Desenha_fogo_bomba(GetFrameTime(), gameState.mapa);
+                desenharInimigos(gameState.inimigos, gameState.numInimigos, gameState.cellSize);
+                DrawRectangle((int)gameState.playerPosition.x, (int)gameState.playerPosition.y, gameState.cellSize, gameState.cellSize, RED);
+                DrawRectangle(0, gameState.screenHeight - gameState.hudHeight, gameState.screenWidth, gameState.hudHeight, LIGHTGRAY);
+                DrawText(TextFormat("Bombas: %d", gameState.bombasDisponiveis), 20, gameState.screenHeight - gameState.hudHeight + 20, 20, BLACK);
+                DrawText(TextFormat("Vidas: %d", gameState.vidasJogador), 200, gameState.screenHeight - gameState.hudHeight + 20, 20, BLACK);
+                DrawText(TextFormat("Pontuacao: %d", gameState.pontuacaoJogador), 400, gameState.screenHeight - gameState.hudHeight + 20, 20, BLACK);
             EndDrawing();
 
-            if (vidasJogador <= 0) {
-                TraceLog(LOG_INFO, "Fim de Jogo! Pontuacao Final: %d", pontuacaoJogador);
-                estadoAtualDoJogo = ESTADO_GAMEOVER;
+            if (gameState.vidasJogador <= 0) {
+                TraceLog(LOG_INFO, "Fim de Jogo! Pontuacao Final: %d", gameState.pontuacaoJogador);
+                gameState.estadoAtualDoJogo = ESTADO_GAMEOVER;
             }
         }
-        else if (estadoAtualDoJogo == ESTADO_GAMEOVER) {
+        else if (gameState.estadoAtualDoJogo == ESTADO_GAMEOVER) {
             if (IsKeyPressed(KEY_ENTER)) {
-                estadoAtualDoJogo = ESTADO_MENU;
-                if (mapa != NULL) {
-                    liberarMapa(mapa);
-                    mapa = NULL;
+                gameState.estadoAtualDoJogo = ESTADO_MENU;
+                if (gameState.mapa != NULL) {
+                    liberarMapa(gameState.mapa);
+                    gameState.mapa = NULL;
                 }
-                liberarInimigos(&inimigos, &numInimigos);
-                pontuacaoJogador = 0;
-                vidasJogador = 3;
-                bombasDisponiveis = MAX_BOMBAS;
+                liberarInimigos(&gameState.inimigos, &gameState.numInimigos);
+                gameState.pontuacaoJogador = 0;
+                gameState.vidasJogador = 3;
+                gameState.bombasDisponiveis = MAX_BOMBAS;
             }
             if (IsKeyPressed(KEY_Q)) {
-                estadoAtualDoJogo = ESTADO_SAIR;
-                if (mapa != NULL) {
-                    liberarMapa(mapa);
-                    mapa = NULL;
+                gameState.estadoAtualDoJogo = ESTADO_SAIR;
+                if (gameState.mapa != NULL) {
+                    liberarMapa(gameState.mapa);
+                    gameState.mapa = NULL;
                 }
-                liberarInimigos(&inimigos, &numInimigos);
+                liberarInimigos(&gameState.inimigos, &gameState.numInimigos);
             }
 
             BeginDrawing();
                 ClearBackground(BLACK);
-                DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 80) / 2, screenHeight / 4, 80, RED);
-                DrawText(TextFormat("Pontuacao Final: %d", pontuacaoJogador),
-                         screenWidth / 2 - MeasureText(TextFormat("Pontuacao Final: %d", pontuacaoJogador), 40) / 2,
-                         screenHeight / 2, 40, WHITE);
+                DrawText("GAME OVER", gameState.screenWidth / 2 - MeasureText("GAME OVER", 80) / 2, gameState.screenHeight / 4, 80, RED);
+                DrawText(TextFormat("Pontuacao Final: %d", gameState.pontuacaoJogador),
+                         gameState.screenWidth / 2 - MeasureText(TextFormat("Pontuacao Final: %d", gameState.pontuacaoJogador), 40) / 2,
+                         gameState.screenHeight / 2, 40, WHITE);
                 DrawText("Pressione ENTER para voltar ao Menu",
-                         screenWidth / 2 - MeasureText("Pressione ENTER para voltar ao Menu", 20) / 2,
-                         screenHeight / 2 + 80, 20, GRAY);
+                         gameState.screenWidth / 2 - MeasureText("Pressione ENTER para voltar ao Menu", 20) / 2,
+                         gameState.screenHeight / 2 + 80, 20, GRAY);
                 DrawText("Pressione Q para Sair do Jogo",
-                         screenWidth / 2 - MeasureText("Pressione Q para Sair do Jogo", 20) / 2,
-                         screenHeight / 2 + 120, 20, GRAY);
+                         gameState.screenWidth / 2 - MeasureText("Pressione Q para Sair do Jogo", 20) / 2,
+                         gameState.screenHeight / 2 + 120, 20, GRAY);
             EndDrawing();
-        } else if (estadoAtualDoJogo == ESTADO_VITORIA) {
-            if (!somPassarFaseTocado) { //
-                PlaySound(somPassarFase); //
-                somPassarFaseTocado = true; //
+        } else if (gameState.estadoAtualDoJogo == ESTADO_VITORIA) {
+            if (!gameState.somPassarFaseTocado) { //
+                PlaySound(gameState.somPassarFase); //
+                gameState.somPassarFaseTocado = true; //
             }
 
             if (IsKeyPressed(KEY_P)) {
-                if (IsSoundPlaying(somPassarFase)) {
-                    StopSound(somPassarFase);
+                if (IsSoundPlaying(gameState.somPassarFase)) {
+                    StopSound(gameState.somPassarFase);
                 }
 
-                nivelAtual++;
-                chavesColetadas = 0;
+                gameState.nivelAtual++;
+                gameState.chavesColetadas = 0;
 
-                liberarMapa(mapa);
-                liberarInimigos(&inimigos, &numInimigos);
+                liberarMapa(gameState.mapa);
+                liberarInimigos(&gameState.inimigos, &gameState.numInimigos);
 
-                sprintf(nomeMapa, "mapa%d.txt", nivelAtual);
-                mapa = carregarMapa(nomeMapa);
-                if (mapa == NULL) {
-                    TraceLog(LOG_ERROR, "Falha ao carregar o proximo nivel: %s", nomeMapa);
-                    estadoAtualDoJogo = ESTADO_MENU;
+                sprintf(gameState.nomeMapa, "mapa%d.txt", gameState.nivelAtual);
+                gameState.mapa = carregarMapa(gameState.nomeMapa);
+                if (gameState.mapa == NULL) {
+                    TraceLog(LOG_ERROR, "Falha ao carregar o proximo nivel: %s", gameState.nomeMapa);
+                    gameState.estadoAtualDoJogo = ESTADO_MENU;
                     continue;
                 }
 
-                playerGridPosicao = encontrarPosicaoInicialJogador(mapa);
-                playerPosition = (Vector2){(float)playerGridPosicao.coluna * cellSize, (float)playerGridPosicao.linha * cellSize};
-                carregarInimigos(mapa, &inimigos, &numInimigos);
-                estadoAtualDoJogo = ESTADO_JOGANDO;
+                gameState.playerGridPosicao = encontrarPosicaoInicialJogador(gameState.mapa);
+                gameState.playerPosition = (Vector2){(float)gameState.playerGridPosicao.coluna * gameState.cellSize, (float)gameState.playerGridPosicao.linha * gameState.cellSize};
+                carregarInimigos(gameState.mapa, &gameState.inimigos, &gameState.numInimigos);
+                gameState.estadoAtualDoJogo = ESTADO_JOGANDO;
             }
 
             BeginDrawing();
                 DrawText("NÍVEL CONCLUÍDO!", GetScreenWidth()/2 - MeasureText("NÍVEL CONCLUÍDO!", 50)/2, 250, 50, GOLD);
                 DrawText("Pressione P para o proximo mapa.", GetScreenWidth()/2 - MeasureText("Pressione P para o proximo mapa.", 20)/2, 320, 20, RAYWHITE);
             EndDrawing();
-        } else if (estadoAtualDoJogo == ESTADO_ZERADO) {
+        } else if (gameState.estadoAtualDoJogo == ESTADO_ZERADO) {
             // Verifica se a música já está tocando para evitar reiniciar
-            if (!IsMusicStreamPlaying(musicaVitoria)) {
-                PlayMusicStream(musicaVitoria);
+            if (!IsMusicStreamPlaying(gameState.musicaVitoria)) {
+                PlayMusicStream(gameState.musicaVitoria);
             }
-            UpdateMusicStream(musicaVitoria); // Atualiza o stream da música
+            UpdateMusicStream(gameState.musicaVitoria); // Atualiza o stream da música
 
             if (IsKeyPressed(KEY_ENTER)) {
-                StopMusicStream(musicaVitoria);
-                estadoAtualDoJogo = ESTADO_MENU;
+                StopMusicStream(gameState.musicaVitoria);
+                gameState.estadoAtualDoJogo = ESTADO_MENU;
             } else if (IsKeyPressed (KEY_Q)) {
-                StopMusicStream(musicaVitoria);
-                estadoAtualDoJogo = ESTADO_SAIR;
+                StopMusicStream(gameState.musicaVitoria);
+                gameState.estadoAtualDoJogo = ESTADO_SAIR;
             }
 
             BeginDrawing();
@@ -406,18 +352,7 @@ int main() {
         // <-- ERRO LÓGICO CORRIGIDO: O bloco duplicado de 'Game Over' que estava aqui foi removido.
     }
 
-    // Libera o mapa e inimigos ao fechar a janela
-    if (mapa != NULL) {
-        liberarMapa(mapa);
-    }
-    liberarInimigos(&inimigos, &numInimigos);
-
-    UnloadSound(somChave);
-    UnloadSound(somExplosao);
-    UnloadSound(somHit);
-    UnloadMusicStream(musicaVitoria);
-    UnloadSound(somMenu);
-    CloseAudioDevice(); // Fecha o dispositivo de áudio
+    descarregarGameState(&gameState);
 
     CloseWindow();
     return 0;

@@ -65,41 +65,39 @@ OpcaoMenu exibirMenu(int screenWidth, int screenHeight) {
 }
 
 // Função para iniciar um novo jogo
-void iniciarNovoJogo(char*** mapa, char* nomeMapa, PosicaoMapa* playerGridPosicao, Vector2* playerPosition,
-                    int* bombasDisponiveis, int* vidasJogador, int* pontuacaoJogador, int* chavesColetadas, int* nivelAtual,
-                    int cellSize) {
+void iniciarNovoJogo(GameState* gameState) {
     PlaySound(somSelecao);
     // Libera o mapa existente se houver
-    if (*mapa != NULL) {
-        liberarMapa(*mapa);
-        *mapa = NULL; // Garante que o ponteiro é NULL após liberar
+    if (gameState->mapa != NULL) {
+        liberarMapa(gameState->mapa);
+        gameState->mapa = NULL; // Garante que o ponteiro é NULL após liberar
     }
 
-    *nivelAtual = 1;
+    gameState->nivelAtual = 1;
     // Carrega um novo mapa (sempre "mapa1.txt" para um novo jogo)
-    sprintf(nomeMapa, "mapa%d.txt", *nivelAtual);
-    *mapa = carregarMapa(nomeMapa);
-    if (*mapa == NULL) {
+    sprintf(gameState->nomeMapa, "mapa%d.txt", gameState->nivelAtual);
+    gameState->mapa = carregarMapa(gameState->nomeMapa);
+    if (gameState->mapa == NULL) {
         TraceLog(LOG_ERROR, "ERRO: Nao foi possivel carregar o mapa para um novo jogo!");
         exit(1);
     }
 
     // Encontra a posicao inicial do jogador no novo mapa
-    PosicaoMapa novaPosicaoInicialJogador = encontrarPosicaoInicialJogador(*mapa);
+    PosicaoMapa novaPosicaoInicialJogador = encontrarPosicaoInicialJogador(gameState->mapa);
     if (novaPosicaoInicialJogador.linha == -1) {
         TraceLog(LOG_ERROR, "ERRO: Nao foi possivel encontrar a posicao inicial do jogador no novo mapa!");
-        liberarMapa(*mapa);
-        *mapa = NULL;
+        liberarMapa(gameState->mapa);
+        gameState->mapa = NULL;
         exit(1);
     }
 
     // Inicializa as variáveis do jogo
-    *playerGridPosicao = novaPosicaoInicialJogador;
-    *playerPosition = (Vector2){(float)playerGridPosicao->coluna * cellSize, (float)playerGridPosicao->linha * cellSize};
-    *bombasDisponiveis = 3;
-    *vidasJogador = 3;
-    *pontuacaoJogador = 0;
-    *chavesColetadas = 0;
+    gameState->playerGridPosicao = novaPosicaoInicialJogador;
+    gameState->playerPosition = (Vector2){(float)gameState->playerGridPosicao.coluna * gameState->cellSize, (float)gameState->playerGridPosicao.linha * gameState->cellSize};
+    gameState->bombasDisponiveis = 3;
+    gameState->vidasJogador = 3;
+    gameState->pontuacaoJogador = 0;
+    gameState->chavesColetadas = 0;
     UnloadSound(somSelecao);
     TraceLog(LOG_INFO, "Novo Jogo Iniciado!");
 }
