@@ -4,6 +4,16 @@ This is a Bomberman-style game developed as a final project for the Computer Pro
 
 The main objective of the game is to navigate through each level, using bombs to destroy obstacles and enemies, and find 5 hidden keys to unlock the exit to the next stage.
 
+## Contributors
+
+This project was developed by a team of students for the Computer Programming II course at the Federal University of Rio de Janeiro (UFRJ).
+
+* Lucas Terra
+* Caio Ogawa
+* Davi Iecin
+* Daniel Piccoli
+* Leonardo Evangelista
+
 ## Core Features
 * **Modular Game Engine:** Built with a central `GameState` struct to manage all data, adhering to the requirement of code structuration in modules and avoiding global variables.
 * **Dynamic Map Loading:** Levels are loaded from simple `.txt` files (`mapa1.txt`, `mapa2.txt`, etc.) at runtime, with the map structure being dynamically allocated in memory.
